@@ -5,12 +5,23 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <sys/types.h>
+#include <pthread.h>
 
 #define BUFSIZE 2048
 #define PORT 5000
 
 // General reference for the UDP server:
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
+void recieve()
+{
+
+}
+
+void speak()
+{
+  
+}
+
 int main()
 {
   // Socket being created
@@ -46,7 +57,8 @@ int main()
     if (recvlen > 0) {
       buf[recvlen] = 0;
       printf("received message: \"%s\"\n", buf);
+      strcpy(buf, "Ping");
+      sendto(s, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, addrlen);
     }
-    // use sendto(s, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, addrlen) to send things
   }
 }

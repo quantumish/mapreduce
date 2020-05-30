@@ -10,11 +10,13 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <string.h>
-#include <netdb.h>
 
 #define PORT 5000
-#define MAXLINE 2048
+#define BUFSIZE 2048
 
+
+// This tutorial helped quite a bit in debugging what was going wrong with connection
+// https://www.geeksforgeeks.org/udp-server-client-implementation-c/
 int main ()
 {
   char* alive = "Alive.";
@@ -38,6 +40,18 @@ int main ()
     exit(0);
   }
   // NOTE This can and will not work if flag argument set to 1
-  sendto(s, alive, MAXLINE, 0, (struct sockaddr*)NULL, sizeof(addr));
-  printf("Message sent.\n");
+  sendto(s, alive, BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
+  printf("Informed server of existence.\n");
+  char buf[BUFSIZE];
+  int recvlen;
+  socklen_t len = sizeof(addr);
+  while (1==1)
+  {
+    recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *) &addr, &len);
+    printf("received %d bytes\n", recvlen);
+    if (recvlen > 0) {
+      buf[recvlen] = 0;
+      printf("received message: \"%s\"\n", buf);
+    }
+  }
 }
