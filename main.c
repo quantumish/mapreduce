@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include <math.h>
 #include <sys/socket.h>
-#include <sys/types.h>
-#include <arpa/inet.h>
 #include <netinet/in.h>
+#include <string.h>
+#include <sys/types.h>
 
 #define PORT 5000
 #define MAXLINE 1024
 
+/* Splits input file into num_splits subfiles for parallelization accross computers and CPUs */
 void split(char* path, int num_splits)
 {
   FILE *rptr;
@@ -44,24 +45,6 @@ void split(char* path, int num_splits)
     linecounter++;
   }
   fclose(rptr);
-}
-
-// General reference for the UDP server:
-// https://www.geeksforgeeks.org/udp-server-client-implementation-c/
-// https://www.geeksforgeeks.org/udp-client-server-using-connect-c-implementation/
-void server()
-{
-  bzero(&servaddr, sizeof(servaddr)); 
-  listenfd = socket(AF_INET, SOCK_DGRAM, 0);
-  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  servaddr.sin_port = htons(PORT);
-  servaddr.sin_family = AF_INET;
-  bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr));
-  len = sizeof(cliaddr);
-  int n = recvfrom(listenfd, buffer, sizeof(buffer), 0, (struct sockaddr*)&cliaddr, &len);
-  buffer[n] = '\0';
-  puts(buffer);
-  sendto(listenfd, message, MAXLINE, 0, (struct sockaddr*)&cliaddr, sizeof(cliaddr));
 }
 
 void begin(char* path, void (*map)(char*), void (*reduce))
