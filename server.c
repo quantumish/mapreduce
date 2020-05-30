@@ -23,6 +23,7 @@ int main()
   // Establish sockaddr_in struct to pass into bind function
   struct sockaddr_in addr;
   memset((char *)&addr, 0, sizeof(addr));
+
   addr.sin_family = AF_INET; // Specify address family.
   addr.sin_addr.s_addr = htonl(INADDR_ANY); // INADDR_ANY just 0.0.0.0, machine IP address
   addr.sin_port = htons(PORT); // Specify port.
@@ -46,5 +47,6 @@ int main()
       buf[recvlen] = 0;
       printf("received message: \"%s\"\n", buf);
     }
+    // use sendto(s, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, addrlen) to send things
   }
 }

@@ -50,6 +50,7 @@ void split(char* path, int num_splits)
 void begin(char* path, void (*map)(char*), void (*reduce))
 {
   split(path, 8);
+
 }
 
 
