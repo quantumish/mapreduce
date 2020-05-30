@@ -1,13 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <sys/types.h>
-
-#define PORT 5000
-#define MAXLINE 1024
+#include "mapreduce.h"
 
 /* Splits input file into num_splits subfiles for parallelization accross computers and CPUs */
 void split(char* path, int num_splits)
@@ -47,15 +38,8 @@ void split(char* path, int num_splits)
   fclose(rptr);
 }
 
-void begin(char* path, void (*map)(char*), void (*reduce))
+void begin(char* path, int (*map)(char*), int (*reduce)(int), int m)
 {
-  split(path, 8);
-
-}
-
-
-int main(int argc, char** argv)
-{
-    //printf("Don't do this! Call functions instead.\n");
-  return 0;
+  split(path, m);
+  startServer(m);
 }

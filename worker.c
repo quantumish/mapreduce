@@ -1,26 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <uuid/uuid.h>
-
-
-#define PORT 5000
-#define BUFSIZE 2048
-
+#include "worker.h"
 
 // This tutorial helped quite a bit in debugging what was going wrong with connection
 // https://www.geeksforgeeks.org/udp-server-client-implementation-c/
 
-int main ()
+int startWorker()
 {
   uuid_t binuuid;
   uuid_generate_random(binuuid);
@@ -63,9 +46,12 @@ int main ()
   {
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *) &addr, &len);
     if (recvlen > 0) {
-      printf("received %d bytes\n", recvlen);
       buf[recvlen] = 0;
-      printf("Received message: \"%s\"\n", buf);
+      printf("Received %d-byte message from master: \"%s\"\n", recvlen, buf);
+      if (strcmp(buf, "Acknowledged.")==0)
+      {
+
+      }
     }
   }
 }

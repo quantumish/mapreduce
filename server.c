@@ -1,13 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <sys/types.h>
-#include <pthread.h>
-#include <arpa/inet.h>
-
+#include "server.h"
 
 #define BUFSIZE 2048
 #define PORT 5000
@@ -25,7 +16,7 @@ char* sliceString(char * str, char * buffer, size_t start, size_t end)
 
 // General reference for the UDP server:
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
-int main()
+int startServer()
 {
   // Socket being created
   int s;
