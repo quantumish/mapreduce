@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 void split(char* path, int num_splits)
 {
@@ -20,8 +21,9 @@ void split(char* path, int num_splits)
   while (fgets(line, sizeof line, rptr) != NULL) {
     linecount++;
   }
+  rewind(rptr);
   while (fgets(line, sizeof line, rptr) != NULL) {
-    if ((linecounter/linecount) == (1/num_splits)) {
+    if (linecounter == round((float) linecount / (float) num_splits)) {
       fclose(wptr);
       linecounter = 1;
       filecounter++;
@@ -32,6 +34,7 @@ void split(char* path, int num_splits)
     }
     fprintf(wptr,"%s\n", line);
     linecounter++;
+
   }
   fclose(rptr);
 }
