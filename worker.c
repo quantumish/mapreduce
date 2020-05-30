@@ -10,64 +10,34 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <netdb.h>
 
 #define PORT 5000
 #define MAXLINE 2048
-#define MSG_CONFIRM 1
 
 int main ()
 {
-  /* struct hostent *hp; */
-  /* struct sockaddr_in servaddr; */
-  /* char *my_message = "this is a test message"; */
-  /* memset((char*)&servaddr, 0, sizeof(servaddr)); */
-  /* servaddr.sin_family = AF_INET; */
-  /* servaddr.sin_port = htons(port); */
-  /* hp = gethostbyname(host); */
-  /* if (!hp) { */
-  /*   fprintf(stderr, "could not obtain address of %s\n", host); */
-  /*   return 0; */
-  /* } */
+  char* alive = "Alive.";
 
-  /* /\* put the host's address into the server address structure *\/ */
-  /* memcpy((void *)&servaddr.sin_addr, hp->h_addr_list[0], hp->h_length); */
-
-  /* /\* send a message to the server *\/ */
-  /* if (sendto(fd, my_message, strlen(my_message), 0, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) { */
-  /*   perror("sendto failed"); */
-  /*   return 0; */
-  /* } */
-  int sockfd;
-  char buffer[MAXLINE];
-  char *hello = "Hello from client";
-  struct sockaddr_in servaddr;
-
-  // Creating socket file descriptor
-  if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
-    perror("socket creation failed");
-    exit(EXIT_FAILURE);
+  // Same socket is needed on client end so initialize all over again.
+  int s;
+  if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+  {
+    exit(1);
   }
+  struct sockaddr_in addr;
+  memset((char *)&addr, 0, sizeof(addr));
+  addr.sin_family = AF_INET; // Specify address family.
+  addr.sin_addr.s_addr = htonl(INADDR_ANY); // INADDR_ANY just 0.0.0.0, machine IP address
+  addr.sin_port = htons(PORT); // Specify port.
 
-  memset(&servaddr, 0, sizeof(servaddr));
-
-  // Filling server information
-  servaddr.sin_family = AF_INET;
-  servaddr.sin_port = htons(PORT);
-  servaddr.sin_addr.s_addr = INADDR_ANY;
-
-  int n, len;
-
-  sendto(sockfd, (const char *)hello, strlen(hello),
-         MSG_CONFIRM, (const struct sockaddr *) &servaddr,
-         sizeof(servaddr));
-  printf("Hello message sent.\n");
-
-  n = recvfrom(sockfd, (char *)buffer, MAXLINE,
-               MSG_WAITALL, (struct sockaddr *) &servaddr,
-               &len);
-  buffer[n] = '\0';
-  printf("Server : %s\n", buffer);
-
-  close(sockfd);
-  return 0;
+  // Connect to server
+  if(connect(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+  {
+    printf("\n Error : Connect Failed \n");
+    exit(0);
+  }
+  // NOTE This can and will not work if flag argument set to 1
+  sendto(s, alive, MAXLINE, 0, (struct sockaddr*)NULL, sizeof(addr));
+  printf("Message sent.\n");
 }
