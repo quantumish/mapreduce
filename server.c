@@ -12,9 +12,19 @@
 #define BUFSIZE 2048
 #define PORT 5000
 
+
+// Adapted from https://stackoverflow.com/questions/26620388/c-substrings-c-string-slicing
+char* getUUID(char * str, char * buffer, size_t start, size_t end)
+{
+    size_t j = 0;
+    for ( size_t i = start; i <= end; ++i ) {
+        buffer[j++] = str[i];
+    }
+    buffer[j] = 0;
+}
+
 // General reference for the UDP server:
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
-
 int main()
 {
   // Socket being created
@@ -47,11 +57,14 @@ int main()
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
     if (recvlen > 0) {
       buf[recvlen] = 0;
-      char* ipaddr[15];
-      inet_aton(ipaddr, &remaddr.sin_addr);
-      printf("Received %d-byte message from %d: \"%s\"\n", recvlen, ipaddr, buf);
-      strcpy(buf, "Acknowledged.");
-      sendto(s, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, addrlen);
+      if (strcmp(buf, "Online."))
+      {
+        char id[2048];
+        getUUID(buf, id, 0, 37);
+        printf("Received %d-byte message from %s: \"%s\"\n", recvlen, id, buf);
+        strcpy(buf, "Acknowledged.");
+        sendto(s, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, addrlen);
+      }
     }
   }
 }

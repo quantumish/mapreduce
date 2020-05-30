@@ -10,6 +10,8 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <uuid/uuid.h>
+
 
 #define PORT 5000
 #define BUFSIZE 2048
@@ -17,8 +19,15 @@
 
 // This tutorial helped quite a bit in debugging what was going wrong with connection
 // https://www.geeksforgeeks.org/udp-server-client-implementation-c/
+
 int main ()
 {
+  uuid_t binuuid;
+  uuid_generate_random(binuuid);
+  char* uuid = malloc(BUFSIZE);
+  uuid_unparse_lower(binuuid, uuid);
+  printf("UUID: %s\n", uuid);
+  
   char* start = "Online.";
 
   // Same socket is needed on client end so initialize all over again.
@@ -40,7 +49,12 @@ int main ()
     exit(0);
   }
   // NOTE This can and will not work if flag argument set to 1
-  sendto(s, start, BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
+  strcat(uuid, ": ");
+  char startmsg[BUFSIZE];
+  strcpy(startmsg, uuid);
+  strcat(startmsg, start);
+
+  sendto(s, startmsg, BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
   printf("Informed server of existence.\n");
   char buf[BUFSIZE];
   int recvlen;
@@ -48,10 +62,10 @@ int main ()
   while (1==1)
   {
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *) &addr, &len);
-    printf("received %d bytes\n", recvlen);
     if (recvlen > 0) {
+      printf("received %d bytes\n", recvlen);
       buf[recvlen] = 0;
-      printf("received message: \"%s\"\n", buf);
+      printf("Received message: \"%s\"\n", buf);
     }
   }
 }
