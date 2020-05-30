@@ -4,8 +4,8 @@
  *
  */
 
-#ifndef MODULE_H
-#define MODULE_H
+#ifndef SERVER_H
+#define SERVER_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +18,6 @@
 #include <arpa/inet.h>
 
 char* sliceString(char * str, char * buffer, size_t start, size_t end);
-int startServer(int m);
+void* startServer(void* m);
 
 #endif /* MODULE_H */

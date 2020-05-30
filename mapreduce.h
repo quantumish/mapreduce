@@ -4,24 +4,19 @@
  *
  */
 
-#ifndef MODULE_H
-#define MODULE_H
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <sys/types.h>
+#ifndef MAPREDUCE_H
+#define MAPREDUCE_H
 
 #include "server.h"
 #include "worker.h"
 
 #define MAXLINE 1024
 
-void split(char* path, int num_splits);
-void begin(char* path, int (*map)(char*), int (*reduce)(int*), int m);
+void split(char *path, int num_splits);
+
+// Starts MapReduce. Calls split function, starts server and worker processes,
+// then recieves output of server and returns it back to program.
+void begin(char* path, int (*map)(char*, char*), int (*reduce)(int*), int m);
 
 
 #endif /* main.h */

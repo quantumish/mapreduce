@@ -1,9 +1,19 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <uuid/uuid.h>
+
 #include "worker.h"
 
 // This tutorial helped quite a bit in debugging what was going wrong with connection
 // https://www.geeksforgeeks.org/udp-server-client-implementation-c/
 
-int startWorker()
+void* startWorker(void * unused)
 {
   uuid_t binuuid;
   uuid_generate_random(binuuid);
@@ -54,4 +64,5 @@ int startWorker()
       }
     }
   }
+  return 1;
 }

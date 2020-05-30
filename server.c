@@ -16,7 +16,7 @@ char* sliceString(char * str, char * buffer, size_t start, size_t end)
 
 // General reference for the UDP server:
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
-int startServer()
+void* startServer(void* m)
 {
   // Socket being created
   int s;
