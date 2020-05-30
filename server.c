@@ -13,8 +13,8 @@
 #define PORT 5000
 
 
-// Adapted from https://stackoverflow.com/questions/26620388/c-substrings-c-string-slicing
-char* getUUID(char * str, char * buffer, size_t start, size_t end)
+// Used from https://stackoverflow.com/questions/26620388/c-substrings-c-string-slicing
+char* sliceString(char * str, char * buffer, size_t start, size_t end)
 {
     size_t j = 0;
     for ( size_t i = start; i <= end; ++i ) {
@@ -54,17 +54,52 @@ int main()
   unsigned char buf[BUFSIZE];
   while (1==1)
   {
+    // TODO Remove this.
+    int deviceCounter = 0;
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
     if (recvlen > 0) {
       buf[recvlen] = 0;
-      if (strcmp(buf, "Online."))
+      char id[2048];
+      sliceString(buf, id, 0, 37);
+      printf("Received %d-byte message from %s: \"%s\"\n", recvlen, id, buf);
+      // TODO Switch to hashmaps instead of bad Python dictionaries
+      char* keys[500];
+      char* values[500];
+      char msgContents[BUFSIZE];
+      sliceString(buf, msgContents, 38, 2048);
+      if (strcmp(msgContents, "Online.")==0)
       {
-        char id[2048];
-        getUUID(buf, id, 0, 37);
-        printf("Received %d-byte message from %s: \"%s\"\n", recvlen, id, buf);
         strcpy(buf, "Acknowledged.");
         sendto(s, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, addrlen);
+        keys[deviceCounter] = id;
+        values[deviceCounter] = "Idle";
+        deviceCounter+=1;
+      }
+      if (strcmp(msgContents, "Starting.")==0)
+      {
+        strcpy(buf, "Acknowledged.");
+        sendto(s, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, addrlen);
+        for (int i = 0; i <= deviceCounter; i++)
+        {
+          if (strcmp(keys[i],id))
+          {
+            values[i] = "In-Progress";
+          }
+        }
+      }
+      if (strcmp(msgContents, "Done")==0)
+      {
+        strcpy(buf, "Acknowledged.");
+        sendto(s, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, addrlen);
+        for (int i = 0; i <= deviceCounter; i++)
+        {
+          if (strcmp(keys[i],id))
+          {
+            values[i] = "Idle";
+          }
+        }
       }
     }
+
   }
 }
