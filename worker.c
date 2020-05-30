@@ -19,7 +19,7 @@
 // https://www.geeksforgeeks.org/udp-server-client-implementation-c/
 int main ()
 {
-  char* alive = "Alive.";
+  char* start = "Online.";
 
   // Same socket is needed on client end so initialize all over again.
   int s;
@@ -40,7 +40,7 @@ int main ()
     exit(0);
   }
   // NOTE This can and will not work if flag argument set to 1
-  sendto(s, alive, BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
+  sendto(s, start, BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
   printf("Informed server of existence.\n");
   char buf[BUFSIZE];
   int recvlen;

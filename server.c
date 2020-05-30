@@ -6,21 +6,14 @@
 #include <string.h>
 #include <sys/types.h>
 #include <pthread.h>
+#include <arpa/inet.h>
+
 
 #define BUFSIZE 2048
 #define PORT 5000
 
 // General reference for the UDP server:
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
-void recieve()
-{
-
-}
-
-void speak()
-{
-  
-}
 
 int main()
 {
@@ -51,13 +44,13 @@ int main()
   unsigned char buf[BUFSIZE];
   while (1==1)
   {
-    printf("Waiting on port %d\n", PORT);
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
-    printf("received %d bytes\n", recvlen);
     if (recvlen > 0) {
       buf[recvlen] = 0;
-      printf("received message: \"%s\"\n", buf);
-      strcpy(buf, "Ping");
+      char* ipaddr[15];
+      inet_aton(ipaddr, &remaddr.sin_addr);
+      printf("Received %d-byte message from %d: \"%s\"\n", recvlen, ipaddr, buf);
+      strcpy(buf, "Acknowledged.");
       sendto(s, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, addrlen);
     }
   }
