@@ -67,11 +67,15 @@ void split(char* path, int num_splits)
 
 void begin(char* path, int (*map)(char*, char*), int (*reduce)(int*), int m)
 {
+  // Intialize error handler to spare my sanity when the inevitable segfault occurs
   signal(SIGSEGV, handler);
+  // Split file into M pieces as detailed in paper.
   split(path, m);
   // Run the server as well as 7 workers. Server is the only thread that returns, so
   // no joining besides that thread is necessary. Source for POSIX threading library:
   // https://www.cs.cmu.edu/afs/cs/academic/class/15492-f07/www/pthreads.html
+  /* int a = (*map)("a", "abc"); */
+  /* printf("&i", a); */
   pthread_t server;
   int ret1;
   ret1 = pthread_create(&server, NULL, startServer, (void *) m);
@@ -79,7 +83,8 @@ void begin(char* path, int (*map)(char*, char*), int (*reduce)(int*), int m)
   for (int i = 0; i < m-1; i++)
   {
     pthread_t worker;
-    pthread_create(&worker, NULL, startWorker, (void*) i);
+    struct args pass_args = {i, map, reduce};
+    pthread_create(&worker, NULL, startWorker, (void *) &pass_args);
   }
 
   pthread_join(server, NULL);

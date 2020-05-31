@@ -10,6 +10,13 @@
 #define PORT 5000
 #define BUFSIZE 2048
 
-void* startWorker(void * name, int (*map)(char*, char*), int (*reduce)(int*));
+struct args
+{
+  int name;
+  int (*map)(char*, char*);
+  int (*reduce)(int*);
+};
+
+void* startWorker(void* arguments);
 
 #endif /* MODULE_H */

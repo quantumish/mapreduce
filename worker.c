@@ -22,8 +22,10 @@ void sliceString(char * str, char * buffer, size_t start, size_t end)
 // This tutorial helped quite a bit in debugging what was going wrong with connection
 // https://www.geeksforgeeks.org/udp-server-client-implementation-c/
 
-void* startWorker(void * name, int (*map)(char*, char*), int (*reduce)(int*))
+void* startWorker(void* arguments)
 {
+  struct args *function_args = arguments;
+  /* (*function_args->map)("a", "abc"); */
   char* start = "Online.";
 
   // Same socket is needed on client end so initialize all over again.
@@ -46,7 +48,7 @@ void* startWorker(void * name, int (*map)(char*, char*), int (*reduce)(int*))
   }
   // NOTE This can and will not work if flag argument set to 1
   sendto(s, start, BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
-  printf("Worker%i | Informed server of existence.\n", name);
+  printf("Worker%i | Informed server of existence.\n", function_args->name);
   char buf[BUFSIZE];
   int recvlen;
   socklen_t len = sizeof(addr);
@@ -55,18 +57,18 @@ void* startWorker(void * name, int (*map)(char*, char*), int (*reduce)(int*))
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *) &addr, &len);
     if (recvlen > 0) {
       buf[recvlen] = 0;
-      printf("Worker%i | Received %d-byte message from server: \"%s\"\n", name, recvlen, buf);
+      printf("Worker%i | Received %d-byte message from server: \"%s\"\n", function_args->name, recvlen, buf);
       char direction[5];
       char args[BUFSIZE];
       sliceString(buf, direction, 0, 5);
       sliceString(buf, args, 6, recvlen-1);
       if (strcmp(direction, "Map---")==0)
       {
-        printf("Worker%i | Starting map of %s.\n", name, args);
+        printf("Worker%i | Starting map of %s.\n", function_args->name, args);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
 
         // This was miserable. Strings are bothersome enough in C but files take it to a whole new level. Vague segfaults, bus errors, and more.
-        // TODO Make this size dynamic/configurable. Also change to relative path.
+        // TODO Make this size dynamic/configurable. Also change to relative path. Also this probably shouldn't be done worker-side.
         char content[4096];
         char line[1024];
         char path[100] = "/Users/davidfreifeld/projects/mapreduce/file_part";
@@ -78,14 +80,9 @@ void* startWorker(void * name, int (*map)(char*, char*), int (*reduce)(int*))
           strcat(content, line);
         }
         fclose(fp);
-
-        int count = 0;
-        char * tmp = content;
-        while(tmp = strstr(tmp, "a"))
-        {
-          count++;
-          tmp++;
-        }
+        int count = 1;
+        /* printf("%x \n", sizeo*function_args->map)); */
+        /* (*function_args->map)("a", "abc"); */
         printf("Final for a %i \n", count);
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }

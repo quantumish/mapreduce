@@ -18,5 +18,4 @@ void split(char *path, int num_splits);
 // then recieves output of server and returns it back to program.
 void begin(char* path, int (*map)(char*, char*), int (*reduce)(int*), int m);
 
-
 #endif /* main.h */
