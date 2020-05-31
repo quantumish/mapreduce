@@ -12,10 +12,24 @@
 void sliceString(char * str, char * buffer, size_t start, size_t end)
 {
     size_t j = 0;
+    printf("Addr of string: %x \n", &buffer);
     for ( size_t i = start; i <= end; ++i ) {
         buffer[j++] = str[i];
     }
     buffer[j] = 0;
+}
+
+char* substr(const char *src, int m, int n)
+{
+    int len = n - m;
+    char *dest = (char*)malloc(sizeof(char) * (len + 1));
+    for (int i = m; i < n && (*(src + i) != '\0'); i++)
+    {
+        *dest = *(src + i);
+        dest++;
+    }
+    *dest = '\0';
+    return dest - len;
 }
 
 // This tutorial helped quite a bit in debugging what was going wrong with connection
@@ -52,20 +66,32 @@ void* startWorker(void* arguments)
   int recvlen;
   socklen_t len = sizeof(addr);
 
+  /* printf("Substring 101 %s\n") */
+
   // Create array which will be used to buffer intermediate values in memory before write to disk as outlined in MapReduce paper
-  int intermediates[10]; // TODO Make this configurable?
+  int intermediates[2]; // TODO Make this dynamic? Needs to depend on M
   int orderCounter = 0; // A counter is needed to allow adding to array properly
+  printf("Ordercount out %d\n", orderCounter);
 
   while (1==1)
   {
+    printf("Addr of order: %x \n", &orderCounter);
+    printf("Ordercount up %d\n", orderCounter);
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *) &addr, &len);
+
     if (recvlen > 0) {
+      printf("Ordercount recv %d\n", orderCounter);
+      printf("Ordercount check 1 %d\n", orderCounter);
       buf[recvlen] = 0;
       printf("Worker%i | Received %d-byte message from server: \"%s\"\n", function_args->name, recvlen, buf);
       char direction[5];
+      printf("Ordercount check 2 %d\n", orderCounter);
       char args[BUFSIZE];
-      sliceString(buf, direction, 0, 5);
+      printf("Ordercount check 3 %d\n", orderCounter);
+      strcpy(direction, substr(buf, 0, 4));
+      printf("Ordercount check 4 %d\n", orderCounter);
       sliceString(buf, args, 6, recvlen-1);
+      printf("Ordercount check 5 %d\n", orderCounter);
       if (strcmp(direction, "Map---")==0)
       {
         printf("Worker%i | Starting map of %s.\n", function_args->name, args);
@@ -88,22 +114,29 @@ void* startWorker(void* arguments)
         count = (*function_args->map)(content);
         printf("Worker%i | Calculated intermediate value %i for part %s\n", function_args->name, count, args);
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
-        intermediates[orderCounter] = count;
-        if (orderCounter == 9)
-        {
-          FILE* wptr;
-          char wpath[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate";
-          strcat(wpath, (char*) function_args->name);
-          wptr = fopen(wpath, "w");
-          for (int i = 0; i < 10; i++)
-          {
-            fprintf(wptr, "%i\n", count);
-          }
-        }
-        else
-        {
-          orderCounter += 1;
-        }
+        /* intermediates[orderCounter] = count; */
+        printf("Ordercount %d\n", orderCounter);
+        /* if (orderCounter == 0) */
+        /* { */
+
+        /*   FILE* wptr; */
+        /*   char wpath[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate"; */
+        /*   char s_name[10]; */
+        /*   sprintf(s_name, "%d", function_args->name); */
+        /*   strcat(wpath, s_name); */
+        /*   printf(wpath); */
+        /*   wptr = fopen(wpath, "w"); */
+        /*   for (int i = 0; i < 1; i++) */
+        /*   { */
+        /*     fprintf(wptr, "%i\n", count); */
+        /*   } */
+        /*   orderCounter = 0; */
+        /* } */
+        /* else */
+        /* { */
+        /*   printf("addding\n"); */
+        /* /\*   orderCounter += 1; *\/ */
+        /* } */
       }
     }
   }
