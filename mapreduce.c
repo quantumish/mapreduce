@@ -5,12 +5,27 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <sys/types.h>
+#include <execinfo.h>
+#include <unistd.h>
 
 #include "server.h"
 #include "worker.h"
 #include "mapreduce.h"
 
 #define MAXLINE 1024
+
+void handler(int sig) {
+  void *array[10];
+  size_t size;
+
+  // get void*'s for all entries on the stack
+  size = backtrace(array, 12);
+
+  // print out all the frames to stderr
+  fprintf(stderr, "Error: signal %d:\n", sig);
+  backtrace_symbols_fd(array, size, STDERR_FILENO);
+  exit(1);
+}
 
 /* Splits input file into num_splits subfiles for parallelization accross computers and CPUs */
 void split(char* path, int num_splits)
@@ -52,6 +67,7 @@ void split(char* path, int num_splits)
 
 void begin(char* path, int (*map)(char*, char*), int (*reduce)(int*), int m)
 {
+  signal(SIGSEGV, handler);
   split(path, m);
   // Run the server as well as 7 workers. Server is the only thread that returns, so
   // no joining is necessary. Source for POSIX threading library:

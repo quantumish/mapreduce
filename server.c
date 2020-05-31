@@ -86,14 +86,30 @@ void* startServer(void* m)
           }
         }
       }
-      /* for (int i = 0; i <= 500; i++) */
-      /* { */
-      /*   if (strcmp(values[i], "Idle")==0) */
-      /*   { */
-      /*     char* order = "map"; */
-      /*     sendto(s, order, strlen(order), 0, (struct sockaddr *)&remaddr, addrlen); */
-      /*   } */
-      /* } */
+      for (int i = 0; i <= 500; i++)
+      {
+        if (strcmp(values[i], "Idle")==0)
+        {
+          char order[6] = "map";
+          // Specify who we're talking to, as its more than just whoever talked to server
+          int s2;
+          if ((s2 = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+          {
+            exit(1);
+          }
+          struct sockaddr_in outaddr;
+          memset((char *)&outaddr, 0, sizeof(outaddr));
+          outaddr.sin_family = AF_INET;
+          outaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+          outaddr.sin_port = htons(keys[i]);
+          if(connect(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+          {
+            printf("\n Error : Connect Failed \n");
+            exit(0);
+          }
+          sendto(s2, order, strlen(order), 0, (struct sockaddr *)NULL, sizeof(outaddr));
+        }
+      }
     }
   }
 }

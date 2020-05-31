@@ -48,7 +48,6 @@ void* startWorker(void * unused)
       printf("Received %d-byte message from server: \"%s\"\n", recvlen, buf);
       if (strcmp(buf, "Acknowledged.")==0)
       {
-
       }
     }
   }
