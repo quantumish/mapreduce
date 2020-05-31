@@ -23,7 +23,8 @@ void sliceString(char * str, char * buffer, size_t start, size_t end)
 
 void* startWorker(void* arguments)
 {
-  struct args *function_args = arguments;
+  struct args *function_args = (struct args *)arguments;
+  printf("Hello, %i %i\n", function_args->name, rand());
   /* function_args->name *= rand(); */
   char* start = "Online.";
 
@@ -31,7 +32,7 @@ void* startWorker(void* arguments)
   int s;
   if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
   {
-    exit(1);
+    printf("\n Error : Socket Failed \n");
   }
   struct sockaddr_in addr;
   memset((char *)&addr, 0, sizeof(addr));
@@ -43,7 +44,6 @@ void* startWorker(void* arguments)
   if(connect(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
   {
     printf("\n Error : Connect Failed \n");
-    exit(0);
   }
   // NOTE This can and will not work if flag argument set to 1
   sendto(s, start, BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));

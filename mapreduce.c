@@ -82,8 +82,11 @@ void begin(char* path, int (*map)(char*), int (*reduce)(int*), int m)
   for (int i = 0; i < m-1; i++)
   {
     pthread_t worker;
-    struct args pass_args = {i, map, reduce};
-    pthread_create(&worker, NULL, startWorker, (void *) &pass_args);
+    struct args * pass_args = malloc(sizeof(struct args));
+    pass_args->name = i;
+    pass_args->map = map;
+    pass_args->reduce = reduce;
+    pthread_create(&worker, NULL, startWorker, (void *) pass_args);
   }
 
   pthread_join(server, NULL);
