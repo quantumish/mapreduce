@@ -114,6 +114,10 @@ void* startServer(void* m)
           }
         }
       }
+      else
+      {
+        // Reduce.
+      }
     }
   }
 }

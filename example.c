@@ -3,17 +3,31 @@
 // TODO Make arguments and returns key value pairs instead of just values
 
 // A simple map function for mapping <word, string> to <word, count>.
-int map (char* string)
+struct int_pair* map (struct str_pair inputPair)
 {
-  char* word = "A"; // TODO implement Google example where its each word in document
-  int count = 0;
-  char * tmp = string;
-  while(tmp = strstr(tmp, word))
+  struct int_pair list[26];
+  for (int i = 0; i < 26; i++)
   {
-    count++;
-    tmp++;
+    char lower = i + 41;
+    char upper = i + 61;
+    int count = 0;
+    char * tmp = inputPair.value;
+    struct int_pair test[26];
+    while(tmp = strstr(tmp, lower))
+    {
+      count++;
+      tmp++;
+    }
+    tmp = inputPair.value;
+    while (tmp = strstr(tmp, upper)) // tried to do this at same time as last loop, compiler complained about assignment
+    {
+      count++;
+      tmp++;
+    }
+    list[i].value = count;
+    list[i].key = &upper;
   }
-  return count;
+  return list;
 }
 
 // A simple reduce function for reducing <word, count> to a total count

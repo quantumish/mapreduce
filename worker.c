@@ -100,8 +100,9 @@ void* startWorker(void* arguments)
           strcat(content, line);
         }
         fclose(fp);
-        int count = 0;
-        count = (*function_args->map)(content);
+        struct int_pair* count;
+        struct str_pair file = {finalpath, content};
+        count = (*function_args->map)(file);
         printf("Worker%i | Calculated intermediate value %i for part %s\n", function_args->name, count, args);
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
         intermediates[orderCounter] = count;
@@ -117,7 +118,6 @@ void* startWorker(void* arguments)
           wptr = fopen(wpath, "w");
           for (int i = 0; i < 1; i++)
           {
-            printf("Writing %i\n", intermediates[i]);
             fprintf(wptr, "%i\n", intermediates[i]);
           }
           fclose(wptr);
