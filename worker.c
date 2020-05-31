@@ -12,7 +12,7 @@
 // This tutorial helped quite a bit in debugging what was going wrong with connection
 // https://www.geeksforgeeks.org/udp-server-client-implementation-c/
 
-void* startWorker(void * unused)
+void* startWorker(void * name)
 {
   char* start = "Online.";
 
@@ -36,7 +36,7 @@ void* startWorker(void * unused)
   }
   // NOTE This can and will not work if flag argument set to 1
   sendto(s, start, BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
-  printf("Informed server of existence.\n");
+  printf("Worker%i | Informed server of existence.\n", name);
   char buf[BUFSIZE];
   int recvlen;
   socklen_t len = sizeof(addr);
@@ -45,7 +45,7 @@ void* startWorker(void * unused)
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *) &addr, &len);
     if (recvlen > 0) {
       buf[recvlen] = 0;
-      printf("Received %d-byte message from server: \"%s\"\n", recvlen, buf);
+      printf("Worker%i | Received %d-byte message from server: \"%s\"\n", name, recvlen, buf);
       if (strcmp(buf, "Acknowledged.")==0)
       {
       }

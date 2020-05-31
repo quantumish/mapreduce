@@ -52,13 +52,14 @@ void* startServer(void* m)
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
     if (recvlen > 0) {
       buf[recvlen] = 0;
-      printf("Received %d-byte message from %i: \"%s\"\n", recvlen, remaddr.sin_port, buf);
+      printf(" SERVER | Received %d-byte message from %i: \"%s\"\n", recvlen, remaddr.sin_port, buf);
       // TODO Switch to hashmap instead of my bad version of Python dictionaries
       int keys[500];
       char* values[500];
       char* response = "Acknowledged.";
       if (strcmp(buf, "Online.")==0)
       {
+        /* response = (char*) remaddr.sin_port; */
         sendto(s, response, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen);
         keys[deviceCounter] = remaddr.sin_port;
         values[deviceCounter] = "Idle";
@@ -66,7 +67,7 @@ void* startServer(void* m)
       }
       if (strcmp(buf, "Starting.")==0)
       {
-        sendto(s, buf, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen);
+        sendto(s, response, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen);
         for (int i = 0; i <= deviceCounter; i++)
         {
           if (keys[i] == remaddr.sin_port)
@@ -77,7 +78,7 @@ void* startServer(void* m)
       }
       if (strcmp(buf, "Done")==0)
       {
-        sendto(s, buf, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen);
+        sendto(s, response, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen);
         for (int i = 0; i <= deviceCounter; i++)
         {
           if (keys[i] == remaddr.sin_port)
@@ -86,28 +87,28 @@ void* startServer(void* m)
           }
         }
       }
-      for (int i = 0; i <= 500; i++)
+      for (int i = 0; values[i] != NULL; i++)
       {
         if (strcmp(values[i], "Idle")==0)
         {
           char order[6] = "map";
-          // Specify who we're talking to, as its more than just whoever talked to server
-          int s2;
-          if ((s2 = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-          {
-            exit(1);
-          }
-          struct sockaddr_in outaddr;
-          memset((char *)&outaddr, 0, sizeof(outaddr));
-          outaddr.sin_family = AF_INET;
-          outaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-          outaddr.sin_port = htons(keys[i]);
-          if(connect(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-          {
-            printf("\n Error : Connect Failed \n");
-            exit(0);
-          }
-          sendto(s2, order, strlen(order), 0, (struct sockaddr *)NULL, sizeof(outaddr));
+          /* Specify who we're talking to, as its more than just whoever talked to server */
+          /* int s2; */
+          /* if ((s2 = socket(AF_INET, SOCK_DGRAM, 0)) < 0) */
+          /* { */
+          /*   exit(1); */
+          /* } */
+          /* struct sockaddr_in outaddr; */
+          /* memset((char *)&outaddr, 0, sizeof(outaddr)); */
+          /* outaddr.sin_family = AF_INET; */
+          /* outaddr.sin_addr.s_addr = htonl(INADDR_ANY); */
+          /* outaddr.sin_port = htons(keys[i]); */
+          /* if(connect(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) */
+          /* { */
+          /*   printf("\n Error : Connect Failed \n"); */
+          /*   exit(0); */
+          /* } */
+          sendto(s, order, strlen(order), 0, (struct sockaddr *) &remaddr, addrlen);
         }
       }
     }

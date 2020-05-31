@@ -79,7 +79,7 @@ void begin(char* path, int (*map)(char*, char*), int (*reduce)(int*), int m)
   for (int i = 0; i < m-1; i++)
   {
     pthread_t worker;
-    pthread_create(&worker, NULL, startWorker, NULL);
+    pthread_create(&worker, NULL, startWorker, (void*) i);
   }
 
   pthread_join(server, NULL);
