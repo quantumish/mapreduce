@@ -5,7 +5,7 @@
 // A simple map function for mapping <word, string> to <word, count>.
 int map (char* string)
 {
-  char* word = "a"; // TODO implement Google example where its each word in document
+  char* word = "A"; // TODO implement Google example where its each word in document
   int count = 0;
   char * tmp = string;
   while(tmp = strstr(tmp, word))

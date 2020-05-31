@@ -8,11 +8,11 @@
 
 #include "worker.h"
 
+// TODO Remove me
 // Used from https://stackoverflow.com/questions/26620388/c-substrings-c-string-slicing
 void sliceString(char * str, char * buffer, size_t start, size_t end)
 {
     size_t j = 0;
-    printf("Addr of string: %x \n", &buffer);
     for ( size_t i = start; i <= end; ++i ) {
         buffer[j++] = str[i];
     }
@@ -38,7 +38,6 @@ char* substr(const char *src, int m, int n)
 void* startWorker(void* arguments)
 {
   struct args *function_args = (struct args *)arguments;
-  printf("Hello, %i %i\n", function_args->name, rand());
   /* function_args->name *= rand(); */
   char* start = "Online.";
 
@@ -71,27 +70,18 @@ void* startWorker(void* arguments)
   // Create array which will be used to buffer intermediate values in memory before write to disk as outlined in MapReduce paper
   int intermediates[2]; // TODO Make this dynamic? Needs to depend on M
   int orderCounter = 0; // A counter is needed to allow adding to array properly
-  printf("Ordercount out %d\n", orderCounter);
 
   while (1==1)
   {
-    printf("Addr of order: %x \n", &orderCounter);
-    printf("Ordercount up %d\n", orderCounter);
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *) &addr, &len);
 
     if (recvlen > 0) {
-      printf("Ordercount recv %d\n", orderCounter);
-      printf("Ordercount check 1 %d\n", orderCounter);
       buf[recvlen] = 0;
       printf("Worker%i | Received %d-byte message from server: \"%s\"\n", function_args->name, recvlen, buf);
-      char direction[5];
-      printf("Ordercount check 2 %d\n", orderCounter);
+      char direction[7];
       char args[BUFSIZE];
-      printf("Ordercount check 3 %d\n", orderCounter);
-      strcpy(direction, substr(buf, 0, 4));
-      printf("Ordercount check 4 %d\n", orderCounter);
+      strcpy(direction, substr(buf, 0, 6));
       sliceString(buf, args, 6, recvlen-1);
-      printf("Ordercount check 5 %d\n", orderCounter);
       if (strcmp(direction, "Map---")==0)
       {
         printf("Worker%i | Starting map of %s.\n", function_args->name, args);
@@ -114,29 +104,29 @@ void* startWorker(void* arguments)
         count = (*function_args->map)(content);
         printf("Worker%i | Calculated intermediate value %i for part %s\n", function_args->name, count, args);
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
-        /* intermediates[orderCounter] = count; */
-        printf("Ordercount %d\n", orderCounter);
-        /* if (orderCounter == 0) */
-        /* { */
+        intermediates[orderCounter] = count;
+        if (orderCounter == 0)
+        {
 
-        /*   FILE* wptr; */
-        /*   char wpath[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate"; */
-        /*   char s_name[10]; */
-        /*   sprintf(s_name, "%d", function_args->name); */
-        /*   strcat(wpath, s_name); */
-        /*   printf(wpath); */
-        /*   wptr = fopen(wpath, "w"); */
-        /*   for (int i = 0; i < 1; i++) */
-        /*   { */
-        /*     fprintf(wptr, "%i\n", count); */
-        /*   } */
-        /*   orderCounter = 0; */
-        /* } */
-        /* else */
-        /* { */
-        /*   printf("addding\n"); */
-        /* /\*   orderCounter += 1; *\/ */
-        /* } */
+          FILE* wptr;
+          char wpath[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate";
+          char s_name[10];
+          sprintf(s_name, "%d", function_args->name);
+          strcat(wpath, s_name);
+          /* printf(wpath); */
+          wptr = fopen(wpath, "w");
+          for (int i = 0; i < 1; i++)
+          {
+            printf("Writing %i\n", intermediates[i]);
+            fprintf(wptr, "%i\n", intermediates[i]);
+          }
+          fclose(wptr);
+          orderCounter = 0;
+        }
+        else
+        {
+          orderCounter += 1;
+        }
       }
     }
   }

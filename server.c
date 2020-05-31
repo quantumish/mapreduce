@@ -108,6 +108,7 @@ void* startServer(void* m)
             char* order = (char*)malloc(13*sizeof(char));
             sprintf(order, "Map---%i", target);
             sendto(s, order, strlen(order), 0, (struct sockaddr *) &remaddr, addrlen);
+            values[i].status = "Waiting";
             values[i].assigned = target;
             mapped[values[i].assigned] = -1;
           }
