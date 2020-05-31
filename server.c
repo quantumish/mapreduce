@@ -60,14 +60,14 @@ void* startServer(void* m)
       char* response = "Acknowledged.";
       if (strcmp(buf, "Online.")==0)
       {
-        sendto(s, response, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen);
+        /* sendto(s, response, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen); */
         keys[deviceCounter] = remaddr.sin_port;
         values[deviceCounter].status = "Idle";
         deviceCounter+=1;
       }
       if (strcmp(buf, "Starting.")==0)
       {
-        sendto(s, response, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen);
+        /* sendto(s, response, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen); */
         for (int i = 0; i <= deviceCounter; i++)
         {
           if (keys[i] == remaddr.sin_port)
@@ -78,7 +78,7 @@ void* startServer(void* m)
       }
       if (strcmp(buf, "Done")==0)
       {
-        sendto(s, response, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen);
+        /* sendto(s, response, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen); */
         for (int i = 0; i <= deviceCounter; i++)
         {
           if (keys[i] == remaddr.sin_port)

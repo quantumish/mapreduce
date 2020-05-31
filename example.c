@@ -1,32 +1,20 @@
 #include "mapreduce.h"
 
+// TODO Make arguments and returns key value pairs instead of just values
+
 // A simple map function for mapping <word, string> to <word, count>.
-// strtok code modified from http://www.cplusplus.com/reference/cstring/strtok/
-int map(char* word, char* string)
+int map (char* string)
 {
-  int wordCount = 0;
-  char * token;
-  token = strtok (string," ");
-  while (token != NULL)
+  char* word = "a"; // TODO implement Google example where its each word in document
+  int count = 0;
+  char * tmp = string;
+  while(tmp = strstr(tmp, word))
   {
-    token = strtok (NULL, " ");
-    if (strcmp(token, word) == 0)
-    {
-      wordCount += 1;
-    }
+    count++;
+    tmp++;
   }
-  return wordCount;
+  return count;
 }
-
-int main()
-{
-  char word[50];
-  strcpy(word, "A");
-  char sentence[50];
-  strcpy(sentence,"Look, a spider AAAAA");
-  map(word, sentence);
-}
-
 
 // A simple reduce function for reducing <word, count> to a total count
 // This requires summing the list, which you may notice is inefficient!
@@ -42,7 +30,7 @@ int reduce(int* wordCounts)
   return totalCount;
 }
 
-/* int main() */
-/* { */
-/*   begin("/Users/davidfreifeld/testing.txt", map, reduce, 8); */
-/* } */
+int main()
+{
+  begin("/Users/davidfreifeld/testing.txt", map, reduce, 8);
+}

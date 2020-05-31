@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -25,7 +24,7 @@ void sliceString(char * str, char * buffer, size_t start, size_t end)
 void* startWorker(void* arguments)
 {
   struct args *function_args = arguments;
-  /* (*function_args->map)("a", "abc"); */
+  /* function_args->name *= rand(); */
   char* start = "Online.";
 
   // Same socket is needed on client end so initialize all over again.
@@ -52,6 +51,11 @@ void* startWorker(void* arguments)
   char buf[BUFSIZE];
   int recvlen;
   socklen_t len = sizeof(addr);
+
+  // Create array which will be used to buffer intermediate values in memory before write to disk as outlined in MapReduce paper
+  int intermediates[10]; // TODO Make this configurable?
+  int orderCounter = 0; // A counter is needed to allow adding to array properly
+
   while (1==1)
   {
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *) &addr, &len);
@@ -69,24 +73,38 @@ void* startWorker(void* arguments)
 
         // This was miserable. Strings are bothersome enough in C but files take it to a whole new level. Vague segfaults, bus errors, and more.
         // TODO Make this size dynamic/configurable. Also change to relative path. Also this probably shouldn't be done worker-side.
-        char content[4096];
+
+        char content[4096]; 
         char line[1024];
         char path[100] = "/Users/davidfreifeld/projects/mapreduce/file_part";
         char* finalpath = strcat(path, args);
-        printf("Path %s\n", finalpath);
-        FILE *fp = fopen(finalpath,"r");
+        FILE* fp = fopen(finalpath,"r");
         while (fgets(line, sizeof line, fp) != NULL)
         {
           strcat(content, line);
         }
         fclose(fp);
-        int count = 1;
-        /* printf("%x \n", sizeo*function_args->map)); */
-        /* (*function_args->map)("a", "abc"); */
-        printf("Final for a %i \n", count);
+        int count = 0;
+        count = (*function_args->map)(content);
+        printf("Worker%i | Calculated intermediate value %i for part %s\n", function_args->name, count, args);
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
+        intermediates[orderCounter] = count;
+        if (orderCounter == 9)
+        {
+          FILE* wptr;
+          char wpath[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate";
+          strcat(wpath, (char*) function_args->name);
+          wptr = fopen(wpath, "w");
+          for (int i = 0; i < 10; i++)
+          {
+            fprintf(wptr, "%i\n", count);
+          }
+        }
+        else
+        {
+          orderCounter += 1;
+        }
       }
     }
   }
-  return 1;
 }
