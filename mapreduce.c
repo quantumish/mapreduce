@@ -65,7 +65,7 @@ void split(char* path, int num_splits)
   fclose(rptr);
 }
 
-void begin(char* path, struct int_pair (*map)(struct str_pair), struct int_pair (*reduce)(struct int_pair), int m)
+void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length)
 {
   // Intialize error handler to spare my sanity when the inevitable segfault occurs
   signal(SIGSEGV, handler);
@@ -86,6 +86,7 @@ void begin(char* path, struct int_pair (*map)(struct str_pair), struct int_pair 
     pass_args->name = i;
     pass_args->map = map;
     pass_args->reduce = reduce;
+    pass_args->length = length;
     pthread_create(&worker, NULL, startWorker, (void *) pass_args);
   }
 

@@ -68,7 +68,7 @@ void* startWorker(void* arguments)
   /* printf("Substring 101 %s\n") */
 
   // Create array which will be used to buffer intermediate values in memory before write to disk as outlined in MapReduce paper
-  int intermediates[2]; // TODO Make this dynamic? Needs to depend on M
+  struct int_pair intermediates[2]; // TODO Make this dynamic? Needs to depend on M
   int orderCounter = 0; // A counter is needed to allow adding to array properly
 
   while (1==1)
@@ -88,7 +88,7 @@ void* startWorker(void* arguments)
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
 
         // This was miserable. Strings are bothersome enough in C but files take it to a whole new level. Vague segfaults, bus errors, and more.
-        // TODO Make this size dynamic/configurable. Also change to relative path. Also this probably shouldn't be done worker-side.
+        // TODO Make this size dynamic/configurable. Also change to relative path. Also this maybe shouldn't be done worker-side.
 
         char content[4096]; 
         char line[1024];
@@ -105,28 +105,25 @@ void* startWorker(void* arguments)
         count = (*function_args->map)(file);
         printf("Worker%i | First intermediate value %i for part %s\n", function_args->name, count->value, args);
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
-        intermediates[orderCounter] = count;
-        if (orderCounter == 0)
-        {
+        intermediates[orderCounter] = *count;
 
-          FILE* wptr;
-          char wpath[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate";
-          char s_name[10];
-          sprintf(s_name, "%d", function_args->name);
-          strcat(wpath, s_name);
-          /* printf(wpath); */
-          wptr = fopen(wpath, "w");
-          for (int i = 0; i < 1; i++)
+        FILE* wptr;
+        char wpath[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate";
+        char s_name[10];
+        sprintf(s_name, "%d", function_args->name);
+        strcat(wpath, s_name);
+        /* printf(wpath); */
+        wptr = fopen(wpath, "w");
+        for (int i = 0; i < 1; i++)
           {
-            fprintf(wptr, "%i\n", intermediates[i]);
+            for (int i = 0; i < function_args->length; i++)
+              {
+                printf("Writing '%s %i'\n", intermediates[i].key, intermediates[i].value);
+                fprintf(wptr, "%s %i\n", intermediates[i].key, intermediates[i].value);
+              }
           }
-          fclose(wptr);
-          orderCounter = 0;
-        }
-        else
-        {
-          orderCounter += 1;
-        }
+        fclose(wptr);
+        orderCounter = 0;
       }
     }
   }

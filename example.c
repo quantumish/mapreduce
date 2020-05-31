@@ -26,8 +26,9 @@ struct int_pair* map (struct str_pair inputPair)
       count++;
       tmp++;
     }
+    printf("%s, %i\n", upper, count);
     list[i].value = count;
-    list[i].key = &upper;
+    list[i].key = upper;
   }
   return list;
 }
@@ -36,17 +37,17 @@ struct int_pair* map (struct str_pair inputPair)
 // This requires summing the list, which you may notice is inefficient!
 // We could use MapReduce inside of here as well, but this is merely
 // proof-of-concept.
-int reduce(int* wordCounts)
+struct int_pair * reduce(struct int_pair* wordCounts)
 {
-  int totalCount = 0;
-  for (int i = 0; i <= sizeof(wordCounts)/sizeof(int); i++)
-  {
-    totalCount += wordCounts[i];
-  }
-  return totalCount;
+  /* int totalCount = 0; */
+  /* for (int i = 0; i <= sizeof(wordCounts)/sizeof(int); i++) */
+  /* { */
+  /*   totalCount += wordCounts[i]; */
+  /* } */
+  /* return totalCount; */
 }
 
 int main()
 {
-  begin("/Users/davidfreifeld/testing.txt", map, reduce, 8);
+  begin("/Users/davidfreifeld/testing.txt", map, reduce, 8, 26);
 }

@@ -42,6 +42,7 @@ void* startServer(void* m)
   }
   // TODO Remove this
   int deviceCounter = 0;
+  int phase = 0; // Prevent attempting to order mapping during reduce stage.
   // Define poor data structure for remembering states of clients. Define struct to allow storing of info about clients.
   struct client
   {
@@ -57,17 +58,14 @@ void* startServer(void* m)
       buf[recvlen] = 0;
       printf(" SERVER | Received %d-byte message from %i: \"%s\"\n", recvlen, remaddr.sin_port, buf);
       // TODO Switch to hashmap instead of my bad version of Python dictionaries
-      char* response = "Acknowledged.";
       if (strcmp(buf, "Online.")==0)
       {
-        /* sendto(s, response, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen); */
         keys[deviceCounter] = remaddr.sin_port;
         values[deviceCounter].status = "Idle";
         deviceCounter+=1;
       }
       if (strcmp(buf, "Starting.")==0)
       {
-        /* sendto(s, response, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen); */
         for (int i = 0; i <= deviceCounter; i++)
         {
           if (keys[i] == remaddr.sin_port)
@@ -76,9 +74,8 @@ void* startServer(void* m)
           }
         }
       }
-      if (strcmp(buf, "Done")==0)
+      if (strcmp(buf, "Done.")==0)
       {
-        /* sendto(s, response, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen); */
         for (int i = 0; i <= deviceCounter; i++)
         {
           if (keys[i] == remaddr.sin_port)
@@ -90,33 +87,49 @@ void* startServer(void* m)
           }
         }
       }
-      int target = -1;
-      for (int j = 0; j < (int) m; j++)
+      if (phase == 0)
       {
-        if (mapped[j] == 0)
+        int target = -1;
+        int prog = -1;
+        for (int j = 0; j < (int) m; j++)
         {
-          target = j;
-          break;
-        }
-      }
-      if (target != -1)
-      {
-        for (int i = 0; values[i].status != NULL; i++)
-        {
-          if (strcmp(values[i].status, "Idle")==0)
+          if (mapped[j] == 0)
           {
-            char* order = (char*)malloc(13*sizeof(char));
-            sprintf(order, "Map---%i", target);
-            sendto(s, order, strlen(order), 0, (struct sockaddr *) &remaddr, addrlen);
-            values[i].status = "Waiting";
-            values[i].assigned = target;
-            mapped[values[i].assigned] = -1;
+            target = j;
+            break;
+          }
+          if (mapped[j] == 0 || mapped [j] == -1) // Check if any process is in progress while we're at it
+          {
+            prog = j;
+          }
+        }
+        if (target != -1)
+        {
+          for (int i = 0; values[i].status != NULL; i++)
+          {
+            if (strcmp(values[i].status, "Idle")==0)
+            {
+              char* order = (char*)malloc(13*sizeof(char));
+              sprintf(order, "Map---%i", target);
+              sendto(s, order, strlen(order), 0, (struct sockaddr *) &remaddr, addrlen);
+              values[i].status = "Waiting";
+              values[i].assigned = target;
+              mapped[values[i].assigned] = -1;
+            }
+          }
+        }
+        else
+        {
+          if (prog == -1)
+          {
+            printf(" SERVER | Mapping complete.\n");
+            phase = 1;
           }
         }
       }
       else
       {
-        // Reduce.
+
       }
     }
   }
