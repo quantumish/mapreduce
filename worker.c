@@ -103,7 +103,7 @@ void* startWorker(void* arguments)
         struct int_pair* count;
         struct str_pair file = {finalpath, content};
         count = (*function_args->map)(file);
-        printf("Worker%i | Calculated intermediate value %i for part %s\n", function_args->name, count, args);
+        printf("Worker%i | First intermediate value %i for part %s\n", function_args->name, count->value, args);
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
         intermediates[orderCounter] = count;
         if (orderCounter == 0)

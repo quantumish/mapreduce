@@ -8,8 +8,10 @@ struct int_pair* map (struct str_pair inputPair)
   struct int_pair list[26];
   for (int i = 0; i < 26; i++)
   {
-    char lower = i + 41;
-    char upper = i + 61;
+    char lower[10];
+    sprintf(lower,"%c", i + 97);
+    char upper[10];
+    sprintf(upper, "%c", i + 65);
     int count = 0;
     char * tmp = inputPair.value;
     struct int_pair test[26];
