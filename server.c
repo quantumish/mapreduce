@@ -33,7 +33,6 @@ void* startServer(void* m)
   int recvlen;
   // Buffer to store recieved data
   unsigned char buf[BUFSIZE];
-  int deviceCounter = 0;
   // List to track which files have been mapped. 0 = unmapped, 1 = mapped, -1 = in-progress.
   int mapped[(int) m];
   // Initialize mapped list to prevent bugs
@@ -41,24 +40,29 @@ void* startServer(void* m)
   {
     mapped[i] = 0;
   }
-  
+  // TODO Remove this
+  int deviceCounter = 0;
+  // Define poor data structure for remembering states of clients. Define struct to allow storing of info about clients.
+  struct client
+  {
+    char* status;
+    int assigned;
+  };
+  int keys[500];
+  struct client values[500];
   while (1==1)
   {
-    // TODO Remove this.
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
     if (recvlen > 0) {
       buf[recvlen] = 0;
       printf(" SERVER | Received %d-byte message from %i: \"%s\"\n", recvlen, remaddr.sin_port, buf);
       // TODO Switch to hashmap instead of my bad version of Python dictionaries
-      int keys[500];
-      char* values[500];
       char* response = "Acknowledged.";
       if (strcmp(buf, "Online.")==0)
       {
-        /* response = (char*) remaddr.sin_port; */
         sendto(s, response, strlen(response), 0, (struct sockaddr *)&remaddr, addrlen);
         keys[deviceCounter] = remaddr.sin_port;
-        values[deviceCounter] = "Idle";
+        values[deviceCounter].status = "Idle";
         deviceCounter+=1;
       }
       if (strcmp(buf, "Starting.")==0)
@@ -68,7 +72,7 @@ void* startServer(void* m)
         {
           if (keys[i] == remaddr.sin_port)
           {
-            values[i] = "In-Progress";
+            values[i].status = "In-Progress";
           }
         }
       }
@@ -79,16 +83,15 @@ void* startServer(void* m)
         {
           if (keys[i] == remaddr.sin_port)
           {
-            values[i] = "Idle";
-            printf("Hi");
+            values[i].status = "Idle";
+            mapped[values[i].assigned] = 1;
+            values[i].assigned = -1;
             break;
           }
         }
-
-        /* mapped[i] = 1; // HACK TODO NOTE FIXME FIXME FIXME THIS CANNOT STAY */
       }
       int target = -1;
-      for (int j = 0; j < m; j++)
+      for (int j = 0; j < (int) m; j++)
       {
         if (mapped[j] == 0)
         {
@@ -98,13 +101,15 @@ void* startServer(void* m)
       }
       if (target != -1)
       {
-        for (int i = 0; values[i] != NULL; i++)
+        for (int i = 0; values[i].status != NULL; i++)
         {
-          if (strcmp(values[i], "Idle")==0)
+          if (strcmp(values[i].status, "Idle")==0)
           {
             char* order = (char*)malloc(13*sizeof(char));
             sprintf(order, "Map---%i", target);
             sendto(s, order, strlen(order), 0, (struct sockaddr *) &remaddr, addrlen);
+            values[i].assigned = target;
+            mapped[values[i].assigned] = -1;
           }
         }
       }

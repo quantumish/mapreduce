@@ -20,7 +20,8 @@ int map(char* word, char* string)
 
 // A simple reduce function for reducing <word, count> to a total count
 // This requires summing the list, which you may notice is inefficient!
-// We could use MapReduce inside of here as well, but this is merely POC.
+// We could use MapReduce inside of here as well, but this is merely
+// proof-of-concept.
 int reduce(int* wordCounts)
 {
   int totalCount = 0;
