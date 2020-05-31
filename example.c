@@ -33,5 +33,5 @@ int reduce(int* wordCounts)
 
 int main()
 {
-  begin("/Users/davidfreifeld/testing.txt", map, reduce, 6);
+  begin("/Users/davidfreifeld/testing.txt", map, reduce, 8);
 }

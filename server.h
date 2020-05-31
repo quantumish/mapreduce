@@ -17,7 +17,7 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 
-char* sliceString(char * str, char * buffer, size_t start, size_t end);
+void sliceString(char * str, char * buffer, size_t start, size_t end);
 void* startServer(void* m);
 
 #endif /* MODULE_H */

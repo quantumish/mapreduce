@@ -56,8 +56,16 @@ void begin(char* path, int (*map)(char*, char*), int (*reduce)(int*), int m)
   // Run the server as well as 7 workers. Server is the only thread that returns, so
   // no joining is necessary. Source for POSIX threading library:
   // https://www.cs.cmu.edu/afs/cs/academic/class/15492-f07/www/pthreads.html
-  pthread_t thread1, thread2, thread3, thread4, thread5, thread6, thread7, thread8;
+  pthread_t server;
   int ret1;
-  ret1 = pthread_create(&thread1, NULL, startServer, (void *) m);
-  pthread_create(&thread2, NULL, startWorker, NULL);
+  ret1 = pthread_create(&server, NULL, startServer, (void *) m);
+
+  for (int i = 0; i < m-1; i++)
+  {
+    pthread_t worker;
+    pthread_create(&worker, NULL, startWorker, NULL);
+  }
+
+  pthread_join(server, NULL);
+  printf("%d\n", ret1);
 }
