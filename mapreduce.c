@@ -39,7 +39,7 @@ void split(char* path, int num_splits)
   char fileoutputname[15];
   char line[MAXLINE];
   FILE *wptr;
-  int filecounter=1;
+  int filecounter=0;
   int linecounter=1;
   int linecount=1;
   sprintf(fileoutputname, "file_part%d", filecounter);

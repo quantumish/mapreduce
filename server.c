@@ -80,8 +80,12 @@ void* startServer(void* m)
           if (keys[i] == remaddr.sin_port)
           {
             values[i] = "Idle";
+            printf("Hi");
+            break;
           }
         }
+
+        /* mapped[i] = 1; // HACK TODO NOTE FIXME FIXME FIXME THIS CANNOT STAY */
       }
       int target = -1;
       for (int j = 0; j < m; j++)

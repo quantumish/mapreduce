@@ -64,15 +64,30 @@ void* startWorker(void * name, int (*map)(char*, char*), int (*reduce)(int*))
       {
         printf("Worker%i | Starting map of %s.\n", name, args);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
-        // TODO Make this size dynamic/configurable
-        char content[4096]; char line[1024];
-        char* path = "/Users/davidfreifeld/file_part"; strcat(path, args);
-        FILE *fp = fopen(path,"r");
+
+        // This was miserable. Strings are bothersome enough in C but files take it to a whole new level. Vague segfaults, bus errors, and more.
+        // TODO Make this size dynamic/configurable. Also change to relative path.
+        char content[4096];
+        char line[1024];
+        char path[100] = "/Users/davidfreifeld/projects/mapreduce/file_part";
+        char* finalpath = strcat(path, args);
+        printf("Path %s\n", finalpath);
+        FILE *fp = fopen(finalpath,"r");
         while (fgets(line, sizeof line, fp) != NULL)
         {
           strcat(content, line);
         }
         fclose(fp);
+
+        int count = 0;
+        char * tmp = content;
+        while(tmp = strstr(tmp, "a"))
+        {
+          count++;
+          tmp++;
+        }
+        printf("Final for a %i \n", count);
+        sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
     }
   }
