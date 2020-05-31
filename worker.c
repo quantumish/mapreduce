@@ -9,10 +9,20 @@
 
 #include "worker.h"
 
+// Used from https://stackoverflow.com/questions/26620388/c-substrings-c-string-slicing
+void sliceString(char * str, char * buffer, size_t start, size_t end)
+{
+    size_t j = 0;
+    for ( size_t i = start; i <= end; ++i ) {
+        buffer[j++] = str[i];
+    }
+    buffer[j] = 0;
+}
+
 // This tutorial helped quite a bit in debugging what was going wrong with connection
 // https://www.geeksforgeeks.org/udp-server-client-implementation-c/
 
-void* startWorker(void * name)
+void* startWorker(void * name, int (*map)(char*, char*), int (*reduce)(int*))
 {
   char* start = "Online.";
 
@@ -46,8 +56,23 @@ void* startWorker(void * name)
     if (recvlen > 0) {
       buf[recvlen] = 0;
       printf("Worker%i | Received %d-byte message from server: \"%s\"\n", name, recvlen, buf);
-      if (strcmp(buf, "Acknowledged.")==0)
+      char direction[5];
+      char args[BUFSIZE];
+      sliceString(buf, direction, 0, 5);
+      sliceString(buf, args, 6, recvlen-1);
+      if (strcmp(direction, "Map---")==0)
       {
+        printf("Worker%i | Starting map of %s.\n", name, args);
+        sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
+        // TODO Make this size dynamic/configurable
+        char content[4096]; char line[1024];
+        char* path = "/Users/davidfreifeld/file_part"; strcat(path, args);
+        FILE *fp = fopen(path,"r");
+        while (fgets(line, sizeof line, fp) != NULL)
+        {
+          strcat(content, line);
+        }
+        fclose(fp);
       }
     }
   }

@@ -70,7 +70,7 @@ void begin(char* path, int (*map)(char*, char*), int (*reduce)(int*), int m)
   signal(SIGSEGV, handler);
   split(path, m);
   // Run the server as well as 7 workers. Server is the only thread that returns, so
-  // no joining is necessary. Source for POSIX threading library:
+  // no joining besides that thread is necessary. Source for POSIX threading library:
   // https://www.cs.cmu.edu/afs/cs/academic/class/15492-f07/www/pthreads.html
   pthread_t server;
   int ret1;
