@@ -28,8 +28,7 @@ void handler(int sig) {
 }
 
 /* Splits input file into num_splits subfiles for parallelization accross computers and CPUs */
-void split(char* path, int num_splits)
-{
+void split(char* path, int num_splits) {
   FILE *rptr;
   rptr = fopen(path, "r");
   if (rptr==NULL) {
@@ -78,10 +77,10 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
   pthread_t server;
   int ret1;
   ret1 = pthread_create(&server, NULL, startServer, (void *) m);
-
-  for (int i = 0; i < m-1; i++)
-  {
+ 
+  for (int i = 0; i < 1; i++) {
     pthread_t worker;
+    // Trickery with structs as pthread_create only allows one argument to function for some reason.
     struct args * pass_args = malloc(sizeof(struct args));
     pass_args->name = i;
     pass_args->map = map;
@@ -89,7 +88,6 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
     pass_args->length = length;
     pthread_create(&worker, NULL, startWorker, (void *) pass_args);
   }
-
   pthread_join(server, NULL);
   printf("%d\n", ret1);
 }

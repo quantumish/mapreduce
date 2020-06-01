@@ -3,40 +3,38 @@
 // TODO Make arguments and returns key value pairs instead of just values
 
 // A simple map function for mapping <word, string> to <word, count>.
-struct int_pair* map (struct str_pair inputPair)
+struct int_pair* map (struct str_pair input_pair)
 {
-  struct int_pair list[26];
-  for (int i = 0; i < 26; i++)
-  {
-    char lower[10];
-    sprintf(lower,"%c", i + 97);
-    char upper[10];
+  /* struct int_pair ex = {"/", 0}; */
+  /* struct int_pair output_pairs[26] = {ex}; */
+  struct int_pair * output_pairs = (struct int_pair *)malloc(sizeof(struct int_pair)*26);
+  for (int i = 0; i < 26; i++) {
+    char lower[2];
+    sprintf(lower, "%c", i + 97);
+    char upper[2];
     sprintf(upper, "%c", i + 65);
     int count = 0;
-    char * tmp = inputPair.value;
-    struct int_pair test[26];
-    while(tmp = strstr(tmp, lower))
-    {
+    char * tmp = input_pair.value;
+    while(tmp = strstr(tmp, lower)) {
       count++;
       tmp++;
     }
-    tmp = inputPair.value;
-    while (tmp = strstr(tmp, upper)) // tried to do this at same time as last loop, compiler complained about assignment
-    {
+    tmp = input_pair.value;
+    while (tmp = strstr(tmp, upper)) {
       count++;
       tmp++;
     }
-    printf("%s, %i\n", upper, count);
-    list[i].value = count;
-    list[i].key = upper;
+    printf("SHOULD BE %s %i\n", upper, count);
+    struct int_pair letter = {upper, count};
+    output_pairs[i] = letter;
   }
-  return list;
+  return output_pairs;
 }
 
-// A simple reduce function for reducing <word, count> to a total count
-// This requires summing the list, which you may notice is inefficient!
-// We could use MapReduce inside of here as well, but this is merely
-// proof-of-concept.
+/* A simple reduce function for reducing <word, count> to a total count */
+/* This requires summing the list, which you may notice is inefficient! */
+/* We could use MapReduce inside of here as well, but this is merely */
+/* proof-of-concept. */
 struct int_pair * reduce(struct int_pair* wordCounts)
 {
   /* int totalCount = 0; */

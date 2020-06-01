@@ -8,6 +8,7 @@
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
 void* startServer(void* m)
 {
+  printf(" SERVER | Server online. \n");
   // Socket being created
   int s;
   // Intialize socket with AF_INET IP family and SOCK_DGRAM datagram service, exit if failed
@@ -35,6 +36,7 @@ void* startServer(void* m)
   unsigned char buf[BUFSIZE];
   // List to track which files have been mapped. 0 = unmapped, 1 = mapped, -1 = in-progress.
   int mapped[(int) m];
+
   // Initialize mapped list to prevent bugs
   for (int i = 0; i < (int) m; i++)
   {
@@ -51,35 +53,27 @@ void* startServer(void* m)
   };
   int keys[500];
   struct client values[500];
-  while (1==1)
-  {
+  while (1==1) {
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
     if (recvlen > 0) {
       buf[recvlen] = 0;
       printf(" SERVER | Received %d-byte message from %i: \"%s\"\n", recvlen, remaddr.sin_port, buf);
       // TODO Switch to hashmap instead of my bad version of Python dictionaries
-      if (strcmp(buf, "Online.")==0)
-      {
+      if (strcmp(buf, "Online.")==0) {
         keys[deviceCounter] = remaddr.sin_port;
         values[deviceCounter].status = "Idle";
         deviceCounter+=1;
       }
-      if (strcmp(buf, "Starting.")==0)
-      {
-        for (int i = 0; i <= deviceCounter; i++)
-        {
-          if (keys[i] == remaddr.sin_port)
-          {
+      if (strcmp(buf, "Starting.")==0) {
+        for (int i = 0; i <= deviceCounter; i++) {
+          if (keys[i] == remaddr.sin_port) {
             values[i].status = "In-Progress";
           }
         }
       }
-      if (strcmp(buf, "Done.")==0)
-      {
-        for (int i = 0; i <= deviceCounter; i++)
-        {
-          if (keys[i] == remaddr.sin_port)
-          {
+      if (strcmp(buf, "Done.")==0) {
+        for (int i = 0; i <= deviceCounter; i++) {
+          if (keys[i] == remaddr.sin_port) {
             values[i].status = "Idle";
             mapped[values[i].assigned] = 1;
             values[i].assigned = -1;
@@ -91,24 +85,18 @@ void* startServer(void* m)
       {
         int target = -1;
         int prog = -1;
-        for (int j = 0; j < (int) m; j++)
-        {
-          if (mapped[j] == 0)
-          {
+        for (int j = 0; j < (int) m; j++) {
+          if (mapped[j] == 0) {
             target = j;
             break;
           }
-          if (mapped[j] == 0 || mapped [j] == -1) // Check if any process is in progress while we're at it
-          {
-            prog = j;
+          if (mapped[j] == 0 || mapped [j] == -1) {
+            prog = 1;
           }
         }
-        if (target != -1)
-        {
-          for (int i = 0; values[i].status != NULL; i++)
-          {
-            if (strcmp(values[i].status, "Idle")==0)
-            {
+        if (target != -1) {
+          for (int i = 0; values[i].status != NULL; i++) {
+            if (strcmp(values[i].status, "Idle")==0) {
               char* order = (char*)malloc(13*sizeof(char));
               sprintf(order, "Map---%i", target);
               sendto(s, order, strlen(order), 0, (struct sockaddr *) &remaddr, addrlen);
@@ -118,17 +106,14 @@ void* startServer(void* m)
             }
           }
         }
-        else
-        {
-          if (prog == -1)
-          {
+        else {
+          if (prog == -1) {
             printf(" SERVER | Mapping complete.\n");
             phase = 1;
           }
         }
       }
-      else
-      {
+      else {
 
       }
     }

@@ -10,7 +10,7 @@
 
 // TODO Remove me
 // Used from https://stackoverflow.com/questions/26620388/c-substrings-c-string-slicing
-void sliceString(char * str, char * buffer, size_t start, size_t end)
+void slice_string(char * str, char * buffer, size_t start, size_t end)
 {
     size_t j = 0;
     for ( size_t i = start; i <= end; ++i ) {
@@ -23,8 +23,7 @@ char* substr(const char *src, int m, int n)
 {
     int len = n - m;
     char *dest = (char*)malloc(sizeof(char) * (len + 1));
-    for (int i = m; i < n && (*(src + i) != '\0'); i++)
-    {
+    for (int i = m; i < n && (*(src + i) != '\0'); i++) {
         *dest = *(src + i);
         dest++;
     }
@@ -43,8 +42,7 @@ void* startWorker(void* arguments)
 
   // Same socket is needed on client end so initialize all over again.
   int s;
-  if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-  {
+  if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
     printf("\n Error : Socket Failed \n");
   }
   struct sockaddr_in addr;
@@ -54,8 +52,7 @@ void* startWorker(void* arguments)
   addr.sin_port = htons(PORT); // Specify port.
 
   // Connect to server
-  if(connect(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-  {
+  if(connect(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
     printf("\n Error : Connect Failed \n");
   }
   // NOTE This can and will not work if flag argument set to 1
@@ -65,14 +62,7 @@ void* startWorker(void* arguments)
   int recvlen;
   socklen_t len = sizeof(addr);
 
-  /* printf("Substring 101 %s\n") */
-
-  // Create array which will be used to buffer intermediate values in memory before write to disk as outlined in MapReduce paper
-  struct int_pair intermediates[2]; // TODO Make this dynamic? Needs to depend on M
-  int orderCounter = 0; // A counter is needed to allow adding to array properly
-
-  while (1==1)
-  {
+  while (1==1) {
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *) &addr, &len);
 
     if (recvlen > 0) {
@@ -81,9 +71,8 @@ void* startWorker(void* arguments)
       char direction[7];
       char args[BUFSIZE];
       strcpy(direction, substr(buf, 0, 6));
-      sliceString(buf, args, 6, recvlen-1);
-      if (strcmp(direction, "Map---")==0)
-      {
+      slice_string(buf, args, 6, recvlen-1);
+      if (strcmp(direction, "Map---")==0) {
         printf("Worker%i | Starting map of %s.\n", function_args->name, args);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
 
@@ -95,35 +84,29 @@ void* startWorker(void* arguments)
         char path[100] = "/Users/davidfreifeld/projects/mapreduce/file_part";
         char* finalpath = strcat(path, args);
         FILE* fp = fopen(finalpath,"r");
-        while (fgets(line, sizeof line, fp) != NULL)
-        {
+        while (fgets(line, sizeof line, fp) != NULL) {
           strcat(content, line);
         }
         fclose(fp);
-        struct int_pair* count;
+        struct int_pair results[function_args->length];
         struct str_pair file = {finalpath, content};
-        count = (*function_args->map)(file);
-        printf("Worker%i | First intermediate value %i for part %s\n", function_args->name, count->value, args);
+        struct int_pair map_output = *(*function_args->map)(file);
+        memcpy(&results, &map_output, sizeof(map_output));
+        printf("Worker%i | Second intermediate value %i vs %i for part %s\n", function_args->name, results[1].value, args);
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
-        intermediates[orderCounter] = *count;
 
         FILE* wptr;
         char wpath[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate";
         char s_name[10];
         sprintf(s_name, "%d", function_args->name);
         strcat(wpath, s_name);
-        /* printf(wpath); */
         wptr = fopen(wpath, "w");
-        for (int i = 0; i < 1; i++)
-          {
-            for (int i = 0; i < function_args->length; i++)
-              {
-                printf("Writing '%s %i'\n", intermediates[i].key, intermediates[i].value);
-                fprintf(wptr, "%s %i\n", intermediates[i].key, intermediates[i].value);
-              }
-          }
+        for (int i = 0; i < function_args->length; i++) {
+          printf("Writing '%i'\n", results[i].value);
+          /* fprintf(wptr, "%s %i\n", results[i].key, results[i].value); */
+        }
+        exit(1);
         fclose(wptr);
-        orderCounter = 0;
       }
     }
   }
