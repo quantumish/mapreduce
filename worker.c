@@ -68,6 +68,9 @@ void* startWorker(void* arguments)
     if (recvlen > 0) {
       buf[recvlen] = 0;
       printf("Worker%i | Received %d-byte message from server: \"%s\"\n", function_args->name, recvlen, buf);
+      if (strcmp(buf, "Ping")==0) {
+        sendto(s, "Pong", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
+      }
       char direction[7];
       char args[BUFSIZE];
       strcpy(direction, substr(buf, 0, 6));
@@ -105,6 +108,10 @@ void* startWorker(void* arguments)
         printf("Worker%i | Finished writing to file.\n", function_args->name);
         fclose(wptr);
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
+      }
+      if (strcmp(direction, "Reduce") == 0) {
+        printf("Worker%i | Starting reduce of %s.\n", function_args->name, args);
+        sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
     }
   }

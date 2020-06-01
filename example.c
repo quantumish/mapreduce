@@ -34,14 +34,21 @@ struct int_pair* map (struct str_pair input_pair)
 /* This requires summing the list, which you may notice is inefficient! */
 /* We could use MapReduce inside of here as well, but this is merely */
 /* proof-of-concept. */
-struct int_pair * reduce(struct int_pair* wordCounts)
+struct int_pair * reduce(struct int_pair* intermediate_pairs)
 {
-  /* int totalCount = 0; */
-  /* for (int i = 0; i <= sizeof(wordCounts)/sizeof(int); i++) */
-  /* { */
-  /*   totalCount += wordCounts[i]; */
-  /* } */
-  /* return totalCount; */
+  struct int_pair * output_pairs = malloc(sizeof(struct int_pair)*26);
+  for (int i = 0; i < 26; i++) {
+    char * upper = malloc(sizeof(char)*2);
+    sprintf(upper, "%c", i + 65);
+    struct int_pair blank = {upper, 0};
+    output_pairs[i] = blank;
+  }
+  for (int i = 0; (unsigned long) i <= sizeof(intermediate_pairs)/sizeof(struct int_pair); i++) {
+    char ascii[3];
+    sprintf(ascii, "%d", intermediate_pairs[i].key);
+    output_pairs[(int) ascii].value += intermediate_pairs[i].value;
+  }
+  return output_pairs;
 }
 
 int main()

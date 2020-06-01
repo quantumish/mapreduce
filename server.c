@@ -6,6 +6,7 @@
 // Starts a UDP server which then listens for workers coming online, updates lookup table on
 // worker availability, and instructs workers on what to do. General reference for the UDP server:
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
+
 void* startServer(void* m)
 {
   printf(" SERVER | Server online. \n");
@@ -36,6 +37,8 @@ void* startServer(void* m)
   unsigned char buf[BUFSIZE];
   // List to track which files have been mapped. 0 = unmapped, 1 = mapped, -1 = in-progress.
   int mapped[(int) m];
+  int reduced[(int) m];
+  int reduce_rounds = 0;
 
   // Initialize mapped list to prevent bugs
   for (int i = 0; i < (int) m; i++)
@@ -75,6 +78,7 @@ void* startServer(void* m)
         for (int i = 0; i <= deviceCounter; i++) {
           if (keys[i] == remaddr.sin_port) {
             values[i].status = "Idle";
+
             mapped[values[i].assigned] = 1;
             values[i].assigned = -1;
             break;
@@ -110,11 +114,38 @@ void* startServer(void* m)
           if (prog == -1) {
             printf(" SERVER | Mapping complete.\n");
             phase = 1;
+            // HACK Prevent stall
+            sendto(s, "Ping", 4, 0, (struct sockaddr *) &remaddr, addrlen);
           }
         }
       }
       else {
-
+        printf("REDUCE\n");
+        int target;
+        int prog = -1;
+        for (int j = 0; j < (int) m; j+=pow(2, reduce_rounds)) {
+          if (mapped[j] == 0) {
+            target = j;
+            break;
+          }
+          if (reduced[j] == 0 || reduced [j] == -1) {
+            prog = 1;
+          }
+        }
+        if (prog == -1) {
+          reduce_rounds++;
+        }
+        for (int i = 0; values[i].status != NULL; i++) {
+          printf("Reading status for %i as %s\n", i, values[i].status);
+          if (strcmp(values[i].status, "Idle")==0) {
+            char* order = (char*)malloc(13*sizeof(char));
+            sprintf(order, "Reduce%i", target);
+            sendto(s, order, strlen(order), 0, (struct sockaddr *) &remaddr, addrlen);
+            values[i].status = "Waiting";
+            values[i].assigned = target;
+            mapped[values[i].assigned] = -1;
+          }
+        }
       }
     }
   }
