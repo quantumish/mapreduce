@@ -9,7 +9,7 @@
 
 void* startServer(void* m)
 {
-  printf(" SERVER | Server online. \n");
+  printf(" SERVER | \x1B[0;32mServer online.\x1B[0;37m\n");
   // Socket being created
   int s;
   // Intialize socket with AF_INET IP family and SOCK_DGRAM datagram service, exit if failed
@@ -39,6 +39,10 @@ void* startServer(void* m)
 
   int mapped[(int) m];
   int* reduced = malloc((int)m*sizeof(int));
+  for (int i = 0; i < (int) m; i++) {
+    reduced[i] = 0;
+  }
+
   /* int reduced[(int) m]; */
   int reduce_rounds = 0;
 
@@ -116,7 +120,7 @@ void* startServer(void* m)
         }
         else {
           if (prog == -1) {
-            printf(" SERVER | Mapping complete.\n");
+            printf(" SERVER | \x1B[0;32mMapping complete.\x1B[0;37m \n");
             phase = 1;
             // HACK Prevent stall
             sendto(s, "Ping", 4, 0, (struct sockaddr *) &remaddr, addrlen);
@@ -127,26 +131,27 @@ void* startServer(void* m)
         int target = -1;
         int prog = -1;
         for (int i = 0; i < (int) m; i+=pow(2, reduce_rounds)) {
+          /* printf(" SERVER | Read value of %i for %i\n", reduced[i], i); */
           if (reduced[i] == 0) {
             target = i;
             break;
           }
-          if (reduced[i] == 0 || reduced [i] == -1) {
+          if (reduced[i] == 0 || reduced[i] == -1) {
             prog = 1;
           }
         }
         if (prog == -1) {
+          printf(" SERVER | Advancing reduce round.\n");
           reduce_rounds++;
         }
         if (target != -1) {
-          printf(" SERVER | Target is %i\n", target);
+          /* printf(" SERVER | Target is %i\n", target); */
           for (int i = 0; values[i].status != NULL; i+=pow(2, reduce_rounds)) {
-            //printf(" SERVER | Read value of %s for %i\n", values[i].status, i);
             if (strcmp(values[i].status, "Idle") == 0) {
               char *order = (char *)malloc(13 * sizeof(char));
-              sprintf(order, "Reduce%i", target);
+              sprintf(order, "Reduce%i_%i", target, target+1);
               remaddr.sin_port = keys[i];
-              sendto(s, order, strlen(order), 0, (struct sockaddr *)&remaddr, addrlen);
+              sendto(s, order, strlen(order)+1, 0, (struct sockaddr *)&remaddr, addrlen);
               values[i].status = "Waiting";
               values[i].assigned = target;
               reduced[values[i].assigned] = -1;
