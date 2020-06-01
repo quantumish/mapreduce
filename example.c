@@ -7,11 +7,11 @@ struct int_pair* map (struct str_pair input_pair)
 {
   /* struct int_pair ex = {"/", 0}; */
   /* struct int_pair output_pairs[26] = {ex}; */
-  struct int_pair * output_pairs = (struct int_pair *)malloc(sizeof(struct int_pair)*26);
+  struct int_pair * output_pairs = malloc(sizeof(struct int_pair)*26);
   for (int i = 0; i < 26; i++) {
-    char lower[2];
+    char * lower = malloc(sizeof(char)*2);
+    char * upper = malloc(sizeof(char)*2);
     sprintf(lower, "%c", i + 97);
-    char upper[2];
     sprintf(upper, "%c", i + 65);
     int count = 0;
     char * tmp = input_pair.value;
@@ -24,7 +24,6 @@ struct int_pair* map (struct str_pair input_pair)
       count++;
       tmp++;
     }
-    printf("SHOULD BE %s %i\n", upper, count);
     struct int_pair letter = {upper, count};
     output_pairs[i] = letter;
   }

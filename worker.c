@@ -88,12 +88,10 @@ void* startWorker(void* arguments)
           strcat(content, line);
         }
         fclose(fp);
-        struct int_pair results[function_args->length];
+        
         struct str_pair file = {finalpath, content};
-        struct int_pair map_output = *(*function_args->map)(file);
-        memcpy(&results, &map_output, sizeof(map_output));
-        printf("Worker%i | Second intermediate value %i vs %i for part %s\n", function_args->name, results[1].value, args);
-        sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
+        struct int_pair * results = (struct int_pair *)malloc(sizeof(struct int_pair)*function_args->length);
+        results = (*function_args->map)(file);
 
         FILE* wptr;
         char wpath[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate";
@@ -102,11 +100,11 @@ void* startWorker(void* arguments)
         strcat(wpath, s_name);
         wptr = fopen(wpath, "w");
         for (int i = 0; i < function_args->length; i++) {
-          printf("Writing '%i'\n", results[i].value);
-          /* fprintf(wptr, "%s %i\n", results[i].key, results[i].value); */
+          fprintf(wptr, "%s %i\n", results[i].key, results[i].value);
         }
-        exit(1);
+        printf("Worker%i | Finished writing to file.\n", function_args->name);
         fclose(wptr);
+        sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
     }
   }
