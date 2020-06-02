@@ -68,16 +68,12 @@ static void set_output_file(char* path, struct int_pair * pair_list, int length)
   fclose(wptr);
 }
 
-static struct int_pair get_output_file(FILE* fp)
+static struct int_pair * get_output_file(FILE* fp)
 {
   struct int_pair * ret = malloc(sizeof(struct int_pair));
   ret->key = malloc(sizeof(char) * MAXLINE);
-  char key[10];
-  int val = 0;
-  fscanf(fp, "%s%d", key, &val);
-  ret->key = key;
-  ret->value = val;
-  return *ret;
+  fscanf(fp, "%s%d", ret->key, &(ret->value));
+  return ret;
 }
 
 /* static struct int_pair * get_output_file(char* path) */
