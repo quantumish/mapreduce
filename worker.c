@@ -31,22 +31,6 @@ static char* substr(const char *src, int m, int n)
     return dest - len;
 }
 
-/* static char** split_str(char* source, char delimiter) */
-/* { */
-/*   char * pieces = malloc(100*sizeof(char)); */
-/*   /\* char* pieces[100]; // 100-argument outputs are a bit of a no-go so should be fine *\/ */
-/*   char* piece; */
-/*   piece = strtok (source, &delimiter); */
-/*   int i = 0; */
-/*   while (piece != NULL) */
-/*   { */
-/*     pieces[i] = piece; */
-/*     piece = strtok (NULL, &delimiter); */
-/*     i++; */
-/*   } */
-/*   return pieces; */
-/* } */
-
 static int length_of_file(char* path)
 {
   FILE* fp = fopen(path,"r");
@@ -81,38 +65,6 @@ static void get_output_file(FILE* fp, struct int_pair* pair_list, int num_existi
     num_existing++;
   }
 }
-
-/* static struct int_pair * get_output_file(char* path) */
-/* { */
-/*   FILE* fp = fopen(path,"r"); */
-/*   char line[1024]; */
-/*   int linecount = 0; */
-/*   printf("AA\n"); */
-/*   while (fgets(line, sizeof line, fp) != NULL) { */
-/*     linecount++; */
-/*   } */
-/*   rewind(fp); */
-
-/*   struct int_pair * pair_list = malloc(sizeof(struct int_pair)*linecount); */
-/*   char** split_line = malloc(MAXLINE*sizeof(char)); */
-/*   int i = 0; */
-/*   for (int i = 0; i < linecount; i++) { */
-/*     pair_list[i].key = " "; */
-/*     pair_list[i].value = 0; */
-/*   } */
-/*   i = 0; */
-/*   while (fgets(line, sizeof(line), fp) != NULL) { */
-/*     split_line = split_str(line, ' '); */
-/*     pair_list[i].key = split_line[0]; */
-/*     pair_list[i].value = strtol(split_line[1], NULL, 10); */
-/*     printf("WROTE %s %i\n", pair_list[i].key, pair_list[i].value); */
-/*     i++; */
-/*   } */
-/*   printf("TRIPLE CHECK WROTE %s %i\n", pair_list[0].key, pair_list[0].value); */
-
-/*   fclose(fp); */
-/*   return pair_list; */
-/* } */
 
 // This tutorial helped quite a bit in debugging what was going wrong with connection
 // https://www.geeksforgeeks.org/udp-server-client-implementation-c/
@@ -193,22 +145,25 @@ void* startWorker(void* arguments)
         printf("Worker%i | Starting reduce of %s.\n", function_args->name, args);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
 
-        int totalsize;
-        char** paths = malloc(sizeof(char)*200);
+        int totalsize = 0;
         char split_args[2][2];
         sscanf(args, "%s %s", split_args[0], split_args[1]);
+        char* path_base = "/Users/davidfreifeld/projects/mapreduce/intermediate";
+        char* paths[2];
+        sscanf(args, "%s %s", split_args[0], split_args[1]);
         for (int i = 0; i < 2; i++) {
-          char path[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate";
-          printf("split, %s\n", split_args[i]);
-          strcat(path, split_args[i]);
-          paths[i] = path;
-          FILE* fptr = fopen(path, "r");
+          char temp_path[100];
+          strcpy(temp_path, path_base);
+          strcat(temp_path, split_args[i]);
+          strcpy(paths[i], temp_path);
+          printf("path: %s\n", paths[i]);
+
+          FILE* fptr = fopen(paths[i], "r");
           fseek(fptr, 0L, SEEK_END);
           int sz = ftell(fptr);
           totalsize+=sz;
         }
-        printf("path: %s total %d\n", paths[0], totalsize);
-        struct int_pair* input = malloc(sizeof(struct int_pair)*totalsize);
+        struct int_pair* input = malloc(sizeof(struct int_pair)*(totalsize-2)); // -2 is to ignore null-terminating chars
 
         int existing = 0;
         for (int i = 0; i < 2; i++) {
