@@ -78,7 +78,7 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
   int ret1;
   ret1 = pthread_create(&server, NULL, startServer, (void *) m);
  
-  for (int i = 0; i < m-1; i++) {
+  for (int i = 0; i < 1; i++) {
     pthread_t worker;
     // Trickery with structs as pthread_create only allows one argument to function for some reason.
     struct args * pass_args = malloc(sizeof(struct args));
