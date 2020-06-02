@@ -75,6 +75,8 @@ static void get_output_file(FILE* fp, struct int_pair* pair_list, int num_existi
   while (fgets(line, MAXLINE, fp) != NULL) {
     struct int_pair * ret = malloc(sizeof(struct int_pair));
     ret->key = malloc(sizeof(char) * MAXLINE);
+    sscanf(line, "%s%d", ret->key, &(ret->value));
+    printf("IN FUNC %s %d\n", ret->key, ret->value);
     pair_list[num_existing] = *ret;
     num_existing++;
   }
@@ -193,10 +195,11 @@ void* startWorker(void* arguments)
 
         int totalsize;
         char** paths = malloc(sizeof(char)*200);
+        char split_args[2][2];
+        sscanf(args, "%s %s", split_args[0], split_args[1]);
         for (int i = 0; i < 2; i++) {
-          char split_args[2][2];
-          sscanf(args, "%s %s", split_args[0], split_args[1]);
           char path[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate";
+          printf("split, %s\n", split_args[i]);
           strcat(path, split_args[i]);
           paths[i] = path;
           FILE* fptr = fopen(path, "r");
@@ -204,6 +207,7 @@ void* startWorker(void* arguments)
           int sz = ftell(fptr);
           totalsize+=sz;
         }
+        printf("path: %s total %d\n", paths[0], totalsize);
         struct int_pair* input = malloc(sizeof(struct int_pair)*totalsize);
 
         int existing = 0;
