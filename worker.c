@@ -31,20 +31,21 @@ static char* substr(const char *src, int m, int n)
     return dest - len;
 }
 
-static char** split_str(char* source, char delimiter)
-{
-  char* pieces[100]; // 100-argument outputs are a bit of a no-go so should be fine
-  char* piece;
-  piece = strtok (source, &delimiter);
-  int i = 0;
-  while (piece != NULL)
-  {
-    pieces[i] = piece;
-    piece = strtok (NULL, &delimiter);
-    i++;
-  }
-  return pieces;
-}
+/* static char** split_str(char* source, char delimiter) */
+/* { */
+/*   char * pieces = malloc(100*sizeof(char)); */
+/*   /\* char* pieces[100]; // 100-argument outputs are a bit of a no-go so should be fine *\/ */
+/*   char* piece; */
+/*   piece = strtok (source, &delimiter); */
+/*   int i = 0; */
+/*   while (piece != NULL) */
+/*   { */
+/*     pieces[i] = piece; */
+/*     piece = strtok (NULL, &delimiter); */
+/*     i++; */
+/*   } */
+/*   return pieces; */
+/* } */
 
 static int length_of_file(char* path)
 {
@@ -67,37 +68,49 @@ static void set_output_file(char* path, struct int_pair * pair_list, int length)
   fclose(wptr);
 }
 
-static struct int_pair * get_output_file(char* path)
+static struct int_pair get_output_file(FILE* fp)
 {
-  FILE* fp = fopen(path,"r");
-  char line[1024];
-  int linecount = 0;
-  while (fgets(line, sizeof line, fp) != NULL) {
-    linecount++;
-  }
-  rewind(fp);
-
-
-  struct int_pair * pair_list = malloc(sizeof(struct int_pair)*linecount);
-  char** split_line = malloc(MAXLINE*sizeof(char));
-  int i = 0;
-  for (int i = 0; i < linecount; i++) {
-    pair_list[i].key = " ";
-    pair_list[i].value = 0;
-  }
-  while (fgets(line, sizeof line, fp) != NULL) {
-    split_line = split_str(line, ' ');
-    pair_list[i].key = split_line[0];
-    pair_list[i].value = strtol(split_line[1], NULL, 10);
-    /* memcpy(&pair_list[i], &line_pair, sizeof(line_pair)); */
-    printf("WROTE %s %i\n", pair_list[i].key, pair_list[i].value);
-    i++;
-  }
-  printf("TRIPLE CHECK WROTE %s %i\n", pair_list[0].key, pair_list[0].value);
-
-  fclose(fp);
-  return pair_list;
+  struct int_pair * ret = malloc(sizeof(struct int_pair));
+  ret->key = malloc(sizeof(char) * MAXLINE);
+  char key[10];
+  int val = 0;
+  fscanf(fp, "%s%d", key, &val);
+  ret->key = key;
+  ret->value = val;
+  return *ret;
 }
+
+/* static struct int_pair * get_output_file(char* path) */
+/* { */
+/*   FILE* fp = fopen(path,"r"); */
+/*   char line[1024]; */
+/*   int linecount = 0; */
+/*   printf("AA\n"); */
+/*   while (fgets(line, sizeof line, fp) != NULL) { */
+/*     linecount++; */
+/*   } */
+/*   rewind(fp); */
+
+/*   struct int_pair * pair_list = malloc(sizeof(struct int_pair)*linecount); */
+/*   char** split_line = malloc(MAXLINE*sizeof(char)); */
+/*   int i = 0; */
+/*   for (int i = 0; i < linecount; i++) { */
+/*     pair_list[i].key = " "; */
+/*     pair_list[i].value = 0; */
+/*   } */
+/*   i = 0; */
+/*   while (fgets(line, sizeof(line), fp) != NULL) { */
+/*     split_line = split_str(line, ' '); */
+/*     pair_list[i].key = split_line[0]; */
+/*     pair_list[i].value = strtol(split_line[1], NULL, 10); */
+/*     printf("WROTE %s %i\n", pair_list[i].key, pair_list[i].value); */
+/*     i++; */
+/*   } */
+/*   printf("TRIPLE CHECK WROTE %s %i\n", pair_list[0].key, pair_list[0].value); */
+
+/*   fclose(fp); */
+/*   return pair_list; */
+/* } */
 
 // This tutorial helped quite a bit in debugging what was going wrong with connection
 // https://www.geeksforgeeks.org/udp-server-client-implementation-c/
@@ -178,22 +191,19 @@ void* startWorker(void* arguments)
         printf("Worker%i | Starting reduce of %s.\n", function_args->name, args);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
 
-        char path1[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate";
-        char** split_args = split_str(args, '_');
-        strcat(path1, split_args[0]);
-        struct int_pair * file1_list = get_output_file(path1);
-        for (int i = 0; i < 26; i++) {
-          printf("READ %s %i\n", file1_list[i].key, file1_list[i].value);
-        }
-        /* char path2[100] =  "/Users/davidfreifeld/projects/mapreduce/intermediate"; */
+        /* char** split_args = split_str(args, '_'); */
+        char path1[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate0";
+        /* strcat(path1, split_args[0]); */
+        struct int_pair result = get_output_file(fopen(path1, "r"));
+        printf("%s %i\n", result.key, result.value);
+        /* struct int_pair * file1_list = get_output_file(path1); */
+        /* for (int i = 0; i < 26; i++) { */
+        /*   printf("READ %s %i\n", file1_list[i].key, file1_list[i].value); */
+        /* } */
+
+        /* char path2[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate"; */
         /* strcat(path2, split_args[1]); */
-        /* struct int_pair * file_2_list; */
-        /* int file_2_count = get_output_file(path2, file_2_list); */
-        /* struct int_pair * total_list = malloc(file_1_count+file_2_count * sizeof(struct int_pair)); */
-        /* memcpy(total_list, file_1_list, 2 * sizeof(struct int_pair)); */
-        /* memcpy(total_list, file_2_list,  * sizeof(struct int_pair)); */
-        /* struct int_pair * results; */
-        /* results = (*function_args->reduce)(total_list); */
+        /* struct int_pair * file2_list = get_output_file(path2); */
       }
     }
   }
