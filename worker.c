@@ -68,13 +68,16 @@ static void set_output_file(char* path, struct int_pair * pair_list, int length)
   fclose(wptr);
 }
 
-static void * get_output_file(FILE* fp, struct int_pair* pair_list, int num_existing)
+static void get_output_file(FILE* fp, struct int_pair* pair_list, int num_existing)
 {
-  struct int_pair * ret = malloc(sizeof(struct int_pair));
-  ret->key = malloc(sizeof(char) * MAXLINE);
-  fscanf(fp, "%s%d", ret->key, &(ret->value));
-  num_existing++;
-  pair_list[num_existing] = *ret;
+  char line[MAXLINE];
+  int i = 0;
+  while (fgets(line, MAXLINE, fp) != NULL) {
+    struct int_pair * ret = malloc(sizeof(struct int_pair));
+    ret->key = malloc(sizeof(char) * MAXLINE);
+    pair_list[num_existing] = *ret;
+    num_existing++;
+  }
 }
 
 /* static struct int_pair * get_output_file(char* path) */
@@ -203,10 +206,13 @@ void* startWorker(void* arguments)
         }
         struct int_pair* input = malloc(sizeof(struct int_pair)*totalsize);
 
+        int existing = 0;
         for (int i = 0; i < 2; i++) {
           FILE* fptr = fopen(paths[i], "r");
-          int existing = 0;
           get_output_file(fptr, input, existing);
+        }
+        for (int i = 0; i < 52; i++) {
+          printf("%s %i\n", input[i].key, input[i].value);
         }
       }
     }
