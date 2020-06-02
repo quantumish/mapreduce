@@ -149,7 +149,7 @@ void* startServer(void* m)
           for (int i = 0; values[i].status != NULL; i+=pow(2, reduce_rounds)) {
             if (strcmp(values[i].status, "Idle") == 0) {
               char *order = (char *)malloc(13 * sizeof(char));
-              sprintf(order, "Reduce%i_%i", target, target+1);
+              sprintf(order, "Reduce%i %i", target, target+1);
               remaddr.sin_port = keys[i];
               sendto(s, order, strlen(order)+1, 0, (struct sockaddr *)&remaddr, addrlen);
               values[i].status = "Waiting";

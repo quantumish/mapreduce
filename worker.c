@@ -68,12 +68,13 @@ static void set_output_file(char* path, struct int_pair * pair_list, int length)
   fclose(wptr);
 }
 
-static struct int_pair * get_output_file(FILE* fp)
+static void * get_output_file(FILE* fp, struct int_pair* pair_list, int num_existing)
 {
   struct int_pair * ret = malloc(sizeof(struct int_pair));
   ret->key = malloc(sizeof(char) * MAXLINE);
   fscanf(fp, "%s%d", ret->key, &(ret->value));
-  return ret;
+  num_existing++;
+  pair_list[num_existing] = *ret;
 }
 
 /* static struct int_pair * get_output_file(char* path) */
@@ -187,19 +188,26 @@ void* startWorker(void* arguments)
         printf("Worker%i | Starting reduce of %s.\n", function_args->name, args);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
 
-        /* char** split_args = split_str(args, '_'); */
-        char path1[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate0";
-        /* strcat(path1, split_args[0]); */
-        struct int_pair result = get_output_file(fopen(path1, "r"));
-        printf("%s %i\n", result.key, result.value);
-        /* struct int_pair * file1_list = get_output_file(path1); */
-        /* for (int i = 0; i < 26; i++) { */
-        /*   printf("READ %s %i\n", file1_list[i].key, file1_list[i].value); */
-        /* } */
+        int totalsize;
+        char** paths = malloc(sizeof(char)*200);
+        for (int i = 0; i < 2; i++) {
+          char split_args[2][2];
+          sscanf(args, "%s %s", split_args[0], split_args[1]);
+          char path[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate";
+          strcat(path, split_args[i]);
+          paths[i] = path;
+          FILE* fptr = fopen(path, "r");
+          fseek(fptr, 0L, SEEK_END);
+          int sz = ftell(fptr);
+          totalsize+=sz;
+        }
+        struct int_pair* input = malloc(sizeof(struct int_pair)*totalsize);
 
-        /* char path2[100] = "/Users/davidfreifeld/projects/mapreduce/intermediate"; */
-        /* strcat(path2, split_args[1]); */
-        /* struct int_pair * file2_list = get_output_file(path2); */
+        for (int i = 0; i < 2; i++) {
+          FILE* fptr = fopen(paths[i], "r");
+          int existing = 0;
+          get_output_file(fptr, input, existing);
+        }
       }
     }
   }
