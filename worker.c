@@ -31,17 +31,6 @@ static char* substr(const char *src, int m, int n)
     return dest - len;
 }
 
-static int length_of_file(char* path)
-{
-  FILE* fp = fopen(path,"r");
-  char line[1024];
-  int linecount = 0;
-  while (fgets(line, sizeof line, fp) != NULL) {
-    linecount++;
-  }
-  return linecount;
-}
-
 static void set_output_file(char* path, struct int_pair * pair_list, int length)
 {
   FILE * wptr;
@@ -52,17 +41,19 @@ static void set_output_file(char* path, struct int_pair * pair_list, int length)
   fclose(wptr);
 }
 
-static void get_output_file(FILE* fp, struct int_pair* pair_list, int num_existing)
+static void get_output_file_portion(FILE* fp, struct int_pair* pair_list, int m, int n)
 {
   char line[MAXLINE];
   int i = 0;
   while (fgets(line, MAXLINE, fp) != NULL) {
-    struct int_pair * ret = malloc(sizeof(struct int_pair));
-    ret->key = malloc(sizeof(char) * MAXLINE);
-    sscanf(line, "%s%d", ret->key, &(ret->value));
-    printf("IN FUNC %s %d\n", ret->key, ret->value);
-    pair_list[num_existing] = *ret;
-    num_existing++;
+    if ((i >= m) && (i < n)) {
+      struct int_pair *ret = malloc(sizeof(struct int_pair));
+      ret->key = malloc(sizeof(char) * MAXLINE);
+      sscanf(line, "%s%d", ret->key, &(ret->value));
+      printf("IN FUNC %s %d\n", ret->key, ret->value);
+      pair_list[i] = *ret;
+    }
+    i++;
   }
 }
 
@@ -139,38 +130,34 @@ void* startWorker(void* arguments)
         set_output_file(wpath, results, function_args->length);
         printf("Worker%i | Finished writing to file.\n", function_args->name);
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
-        printf("Sent message\n");
       }
       else if (strcmp(direction, "Reduce") == 0) {
         printf("Worker%i | Starting reduce of %s.\n", function_args->name, args);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
 
-        int totalsize = 0;
-        char split_args[2][2];
-        sscanf(args, "%s %s", split_args[0], split_args[1]);
-        char* path_base = "/Users/davidfreifeld/projects/mapreduce/intermediate";
-        char* paths[2];
-        sscanf(args, "%s %s", split_args[0], split_args[1]);
-        for (int i = 0; i < 2; i++) {
-          char temp_path[100];
-          strcpy(temp_path, path_base);
-          strcat(temp_path, split_args[i]);
-          strcpy(paths[i], temp_path);
-          printf("path: %s\n", paths[i]);
+        /* int totalsize = 0; */
+        /* char split_args[2][2]; */
+        /* sscanf(args, "%s %s", split_args[0], split_args[1]); */
+        /* char* path_base = "/Users/davidfreifeld/projects/mapreduce/intermediate"; */
+        /* char* paths[2]; */
+        /* for (int i = 0; i < 2; i++) { */
+        /*   char temp_path[100]; */
+        /*   strcpy(temp_path, path_base); */
+        /*   strcat(temp_path, split_args[i]); */
+        /*   paths[i] = temp_path; */
 
-          FILE* fptr = fopen(paths[i], "r");
-          fseek(fptr, 0L, SEEK_END);
-          int sz = ftell(fptr);
-          totalsize+=sz;
-        }
-        struct int_pair* input = malloc(sizeof(struct int_pair)*(totalsize-2)); // -2 is to ignore null-terminating chars
+        /*   FILE* fptr = fopen(paths[i], "r"); */
+        /*   fseek(fptr, 0L, SEEK_END); */
+        /*   int sz = ftell(fptr); */
+        /*   totalsize+=sz; */
+        /* } */
+        /* printf("path: %s\n", paths[0]); */
+        struct int_pair* input = malloc(sizeof(struct int_pair)*(26)); // -2 is to ignore null-terminating chars
 
-        int existing = 0;
-        for (int i = 0; i < 2; i++) {
-          FILE* fptr = fopen(paths[i], "r");
-          get_output_file(fptr, input, existing);
-        }
-        for (int i = 0; i < 52; i++) {
+        FILE* fptr = fopen("/Users/davidfreifeld/projects/mapreduce/intermediate0", "r");
+        get_output_file_portion(fptr, input, 0, 5);
+
+        for (int i = 0; i < 5; i++) {
           printf("%s %i\n", input[i].key, input[i].value);
         }
       }
