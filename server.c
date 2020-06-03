@@ -38,13 +38,7 @@ void* startServer(void* m)
   // List to track which files have been mapped. 0 = unmapped, 1 = mapped, -1 = in-progress.
 
   int mapped[(int) m];
-  int* reduced = malloc((int)m*sizeof(int));
-  for (int i = 0; i < (int) m; i++) {
-    reduced[i] = 0;
-  }
-
-  /* int reduced[(int) m]; */
-  int reduce_rounds = 0;
+  int reduced[(int) m];
 
   // Initialize mapped list to prevent bugs
   for (int i = 0; i < (int) m; i++)
@@ -130,31 +124,24 @@ void* startServer(void* m)
       else {
         int target = -1;
         int prog = -1;
-        for (int i = 0; i < (int) m; i+=pow(2, reduce_rounds)) {
-          /* printf(" SERVER | Read value of %i for %i\n", reduced[i], i); */
+        for (int i = 0; i < (int) m; i++) {
           if (reduced[i] == 0) {
             target = i;
-            break;
           }
           if (reduced[i] == 0 || reduced[i] == -1) {
             prog = 1;
           }
         }
-        if (prog == -1) {
-          printf(" SERVER | Advancing reduce round.\n");
-          reduce_rounds++;
-        }
         if (target != -1) {
-          /* printf(" SERVER | Target is %i\n", target); */
-          for (int i = 0; values[i].status != NULL; i+=pow(2, reduce_rounds)) {
+          for (int i = 0; values[i].status != NULL; i++) {
             if (strcmp(values[i].status, "Idle") == 0) {
               char *order = (char *)malloc(13 * sizeof(char));
-              sprintf(order, "Reduce%i %i", target, target+1);
+              sprintf(order, "Reduce%i", (int) m);
               remaddr.sin_port = keys[i];
               sendto(s, order, strlen(order)+1, 0, (struct sockaddr *)&remaddr, addrlen);
               values[i].status = "Waiting";
               values[i].assigned = target;
-              reduced[values[i].assigned] = -1;
+              reduced[target] = -1;
               break;
             }
           }
