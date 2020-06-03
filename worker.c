@@ -39,6 +39,24 @@ static void aggregate_outputs(FILE* final, int max_name)
   fclose(final);
 }
 
+static int cmp_str (char* str1, char* str2)
+{
+  int num1 = 0;
+  for (char *i = str1; *i; ++i) {
+    char ascii_str[3];
+    sprintf(ascii_str, "%d", i);
+    int ascii_num = strtol(ascii_str, NULL, 10);
+    num1 = (num1 * 100) + ascii_num;
+  }
+  printf("%d", num1);
+}
+
+static void sort_file(FILE* final, FILE* input)
+{
+  char ** list = {"Sad", "Bad", "Mad", "Had", "Tad", "Lad", "Ad", "Clad", "Fad", "Pad"};
+  qsort(list, 10, sizeof (char*), cmp_str);
+}
+
 
 static void get_output_file_portion(FILE* fp, struct int_pair* pair_list, int m, int n)
 {
@@ -137,7 +155,10 @@ void* startWorker(void* arguments)
         FILE* aggregate = fopen("./aggregate0", "w");
         aggregate_outputs(aggregate, split_args[0]);
 
-        struct int_pair* input = malloc(sizeof(struct int_pair)*(26)); // -2 is to ignore null-terminating chars
+        FILE* sorted = fopen("./sorted0", "w");
+        sort_file(sorted, aggregate);
+
+        struct int_pair* input = malloc(sizeof(struct int_pair)*(26));
         FILE* fptr = fopen("./intermediate0", "r");
         get_output_file_portion(fptr, input, 0, 5);
         input[1].key = "A";
