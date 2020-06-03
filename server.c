@@ -100,6 +100,7 @@ void* startServer(void* m)
         }
         if (target != -1) {
           for (int i = 0; values[i].status != NULL; i++) {
+            /* printf("Read value as %s\n", values[i].status); */
             if (strcmp(values[i].status, "Idle")==0) {
               char* order = (char*)malloc(13*sizeof(char));
               remaddr.sin_port = keys[i];
@@ -108,7 +109,6 @@ void* startServer(void* m)
               values[i].status = "Waiting";
               values[i].assigned = target;
               mapped[values[i].assigned] = -1;
-              break;
             }
           }
         }
@@ -133,7 +133,7 @@ void* startServer(void* m)
           }
         }
         if (target != -1) {
-          for (int i = 0; values[i].status != NULL; i++) {
+          for (int i = 0; i < (int) m-1; i++) {
             if (strcmp(values[i].status, "Idle") == 0) {
               char *order = (char *)malloc(13 * sizeof(char));
               sprintf(order, "Reduce %i-%i", (int) m, target);
@@ -142,7 +142,6 @@ void* startServer(void* m)
               values[i].status = "Waiting";
               values[i].assigned = target;
               reduced[target] = -1;
-              break;
             }
           }
         }

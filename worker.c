@@ -18,11 +18,15 @@ static void set_output_file(char* path, struct int_pair * pair_list, int length)
   fclose(wptr);
 }
 
+static void retrieve_portion(char* total, char* piece) {
+
+}
+
 static void aggregate_outputs(FILE* final, int max_name)
 {
   char line[BUFSIZE];
   for (int i = 0; i < max_name; i++) {
-    char* path_base = "/Users/davidfreifeld/projects/mapreduce/intermediate";
+    char* path_base = "./intermediate";
     char s_name[10];
     sprintf(s_name, "%d", i);
     char path [strlen(path_base) + strlen(s_name) + 1];
@@ -65,15 +69,12 @@ static void sort_file(char* final, char* path, int name)
   char s_name[10];
   sprintf(s_name, "%d", name);
   strcat(finalpath, s_name);
-  printf("finalpath: %s\n", finalpath);
-  FILE* sorted = fopen(finalpath, "wr");
+  FILE* sorted = fopen(finalpath, "w");
   for (int i = 0; i < length; i++) {
-    printf("Writing %s", list[i]);
     fprintf(sorted, "%s", list[i]);
   }
   fclose(sorted);
   fclose(input);
-  /* fwrite(line, sizeof(char), write_sz, final); */
 }
 
 
@@ -86,7 +87,6 @@ static void get_output_file_portion(FILE* fp, struct int_pair* pair_list, int m,
       struct int_pair *ret = malloc(sizeof(struct int_pair));
       ret->key = malloc(sizeof(char) * MAXLINE);
       sscanf(line, "%s%d", ret->key, &(ret->value));
-      printf("IN FUNC %s %d\n", ret->key, ret->value);
       pair_list[i] = *ret;
     }
     i++;
@@ -100,6 +100,8 @@ void* startWorker(void* arguments)
 {
   struct args *function_args = (struct args *)arguments;
   char* start = "Online.";
+  char s_name[10];
+  sprintf(s_name, "%d", function_args->name);
 
   // Same socket is needed on client end so initialize all over again.
   int s;
@@ -142,7 +144,7 @@ void* startWorker(void* arguments)
         // This was miserable. Strings are bothersome enough in C but files take it to a whole new level. Vague segfaults, bus errors, and more.
         // TODO Make this size dynamic/configurable. Also change to relative path. Also this maybe shouldn't be done worker-side.
 
-        char content[4096]; 
+        char content[4096];
         char line[1024];
         char path[100] = "./file_part";
         char* finalpath = strcat(path, args);
@@ -157,33 +159,37 @@ void* startWorker(void* arguments)
         results = (*function_args->map)(file);
 
         char wpath[100] = "./intermediate";
-        char s_name[10];
-        sprintf(s_name, "%ld", strtol(args, NULL, 10));
-        strcat(wpath, s_name);
+        char t_name[10];
+        sprintf(t_name, "%ld", strtol(args, NULL, 10));
+        strcat(wpath, t_name);
         set_output_file(wpath, results, function_args->length);
         printf("Worker%i | Finished writing to file.\n", function_args->name);
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
       else if (strcmp(direction, "Reduce") == 0) {
         printf("Worker%i | Starting reduce.\n", function_args->name);
-        sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
-
+        sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr))
         int split_args[2];
         sscanf(args, "%i-%i", &split_args[0], &split_args[1]);
 
-        FILE* aggregate = fopen("./aggregate0", "w");
+        char agg_path[20] = "./aggregate";
+        strcat(agg_path, s_name);
+        FILE* aggregate = fopen(agg_path, "w");
         aggregate_outputs(aggregate, split_args[0]);
 
-        FILE* sorted = fopen("./sorted0", "w");
-        sort_file(sorted, "./aggregate0", function_args->name);
+        char sort_path[20] = "./sorted";
+        strcat(sort_path, s_name);
+        sort_file(sort_path, agg_path, function_args->name);
 
-        struct int_pair* input = malloc(sizeof(struct int_pair)*(26));
-        FILE* fptr = fopen("./intermediate0", "r");
-        get_output_file_portion(fptr, input, 0, 5);
-        input[1].key = "A";
-        for (int i = 0; i < 5; i++) {
+        struct int_pair* input = malloc(sizeof(struct int_pair)*(27));
+
+        /* FILE* fptr = fopen("./intermediate0", "r"); */
+        /* get_output_file_portion(fptr, input, 0, 5); */
+        /* input[1].key = "A"; */
+        /* for (int i = 0; i < 5; i++) { */
           /* printf("%s %i\n", input[i].key, input[i].value); */
-        }
+        /* } */
+
         struct int_pair* results; //= malloc(sizeof(struct int_pair)*(26));
         results = (*function_args->reduce)(input);
         for (int i = 0; i < 5; i++) {
