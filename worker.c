@@ -48,11 +48,26 @@ static int alphcmp(const void* ptr1, const void* ptr2)
 
 static void sort_file(FILE* final, FILE* input)
 {
-  /* int write_sz; */
-  /* while ((write_sz = fread(line, sizeof(char), BUFSIZE, fptr))) { */
-  /*   fwrite(line, sizeof(char), write_sz, final); */
+  int lines = 0;
+  char line[MAXLINE];
+  /* rewind(input); */
+  /* while (fgets(line, sizeof(line), input)) { */
+  /*   lines++; */
   /* } */
-  qsort(list, 10, sizeof (char*), alphcmp);
+  while (EOF != (fscanf(input, "%*[^\n]"), fscanf(input,"%*c")))
+    ++lines;
+  printf("? %i\n", lines);
+  rewind(input);
+  char* list[lines];
+  for (int i = 0; i < lines; i++)  {
+    fread(line, sizeof(char), BUFSIZE, input);
+    list[i] = line;
+  }
+  qsort(list, lines, sizeof (char*), alphcmp);
+  for (int i = 0; i < lines; i++) {
+    printf("%s\n", list[i]);
+  }
+  /* fwrite(line, sizeof(char), write_sz, final); */
 }
 
 
