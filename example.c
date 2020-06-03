@@ -53,5 +53,5 @@ struct int_pair * reduce(struct int_pair* intermediate_pairs)
 
 int main()
 {
-  begin("/Users/davidfreifeld/testing.txt", map, reduce, 8, 26);
+  begin("./testing.txt", map, reduce, 8, 26);
 }
