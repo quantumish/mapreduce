@@ -135,7 +135,6 @@ void* startWorker(void* arguments)
         printf("Worker%i | Starting reduce.\n", function_args->name);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
 
-<<<<<<< HEAD
         /* int totalsize = 0; */
         /* char split_args[2][2]; */
         /* sscanf(args, "%s %s", split_args[0], split_args[1]); */
@@ -154,26 +153,6 @@ void* startWorker(void* arguments)
         /* } */
         /* printf("path: %s\n", paths[0]); */
         struct int_pair* input = malloc(sizeof(struct int_pair)*(26)); // -2 is to ignore null-terminating chars
-=======
-        /* int totalsize = 0; */
-        /* char split_args[2][2]; */
-        /* sscanf(args, "%s %s", split_args[0], split_args[1]); */
-        /* char* path_base = "/Users/davidfreifeld/projects/mapreduce/intermediate"; */
-        /* char* paths[2]; */
-        /* for (int i = 0; i < 2; i++) { */
-        /*   char temp_path[100]; */
-        /*   strcpy(temp_path, path_base); */
-        /*   strcat(temp_path, split_args[i]); */
-        /*   paths[i] = temp_path; */
-
-        /*   FILE* fptr = fopen(paths[i], "r"); */
-        /*   fseek(fptr, 0L, SEEK_END); */
-        /*   int sz = ftell(fptr); */
-        /*   totalsize+=sz; */
-        /* } */
-        /* printf("path: %s\n", paths[0]); */
-        struct int_pair* input = malloc(sizeof(struct int_pair)*(26));
->>>>>>> 927dbe69ed3cc38bea65c665eae1ddd082862243
 
         FILE* fptr = fopen("./intermediate0", "r");
         get_output_file_portion(fptr, input, 0, 5);
