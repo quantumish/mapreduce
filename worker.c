@@ -8,9 +8,6 @@
 
 #include "worker.h"
 
-// FIXME DESTROY ME I SHOULD NOT EXIST CAST ME INTO THE FLAMES I AM A SYMPTOM OF TERRIBLE CODE
-// Used from https://stackoverflow.com/questions/26620388/c-substrings-c-string-slicing
-
 static void set_output_file(char* path, struct int_pair * pair_list, int length)
 {
   FILE * wptr;
@@ -20,6 +17,28 @@ static void set_output_file(char* path, struct int_pair * pair_list, int length)
   }
   fclose(wptr);
 }
+
+static void aggregate_outputs(FILE* final, int max_name)
+{
+  char line[BUFSIZE];
+  for (int i = 0; i < max_name; i++) {
+    char* path_base = "/Users/davidfreifeld/projects/mapreduce/intermediate";
+    char s_name[10];
+    sprintf(s_name, "%d", i);
+    char path [strlen(path_base) + strlen(s_name) + 1];
+    strcpy(path, path_base);
+    strcat(path, s_name);
+    FILE* fptr = fopen(path, "r");
+    // Modified from https://stackoverflow.com/questions/11384032/merge-n-files-using-a-c-program/11384194
+    int write_sz;
+    while ((write_sz = fread(line, sizeof(char), BUFSIZE, fptr))) {
+      fwrite(line, sizeof(char), write_sz, final);
+    }
+    fclose(fptr);
+  }
+  fclose(final);
+}
+
 
 static void get_output_file_portion(FILE* fp, struct int_pair* pair_list, int m, int n)
 {
@@ -102,7 +121,7 @@ void* startWorker(void* arguments)
 
         char wpath[100] = "./intermediate";
         char s_name[10];
-        sprintf(s_name, "%d", strtol(args, NULL, 10));
+        sprintf(s_name, "%ld", strtol(args, NULL, 10));
         strcat(wpath, s_name);
         set_output_file(wpath, results, function_args->length);
         printf("Worker%i | Finished writing to file.\n", function_args->name);
@@ -111,34 +130,14 @@ void* startWorker(void* arguments)
       else if (strcmp(direction, "Reduce") == 0) {
         printf("Worker%i | Starting reduce.\n", function_args->name);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
+
         int split_args[2];
         sscanf(args, "%i-%i", &split_args[0], &split_args[1]);
 
-        for (int i = 0; i < split_args[0]; i++) {
-          char* path_base = "/Users/davidfreifeld/projects/mapreduce/intermediate";
-          char s_name[10];
-          sprintf(s_name, "%d", i);
-          char path [strlen(path_base) + strlen(s_name) + 1];
-          strcpy(path, path_base);
-          strcat(path, s_name);
-        }
+        FILE* aggregate = fopen("./aggregate0", "w");
+        aggregate_outputs(aggregate, split_args[0]);
 
-        /* int totalsize = 0; */
-        /* char* paths[2]; */
-        /* for (int i = 0; i < 2; i++) { */
-        /*   char temp_path[100]; */
-        /*   strcpy(temp_path, path_base); */
-        /*   strcat(temp_path, split_args[i]); */
-        /*   paths[i] = temp_path; */
-
-        /*   FILE* fptr = fopen(paths[i], "r"); */
-        /*   fseek(fptr, 0L, SEEK_END); */
-        /*   int sz = ftell(fptr); */
-        /*   totalsize+=sz; */
-        /* } */
-        /* printf("path: %s\n", paths[0]); */
         struct int_pair* input = malloc(sizeof(struct int_pair)*(26)); // -2 is to ignore null-terminating chars
-
         FILE* fptr = fopen("./intermediate0", "r");
         get_output_file_portion(fptr, input, 0, 5);
         input[1].key = "A";
