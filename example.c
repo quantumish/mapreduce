@@ -43,10 +43,14 @@ struct int_pair * reduce(struct int_pair* intermediate_pairs)
     struct int_pair blank = {upper, 0};
     output_pairs[i] = blank;
   }
-  for (int i = 0; (unsigned long) i <= sizeof(intermediate_pairs)/sizeof(struct int_pair); i++) {
+  int i = 0;
+  char ascii[3];
+  sprintf(ascii, "%d", *(intermediate_pairs[0].key));
+  // HACK/FIXME Uses temp value, change to null-terminating of struct lists
+  for (int i = 0; i < 5; i++) {
     char ascii[3];
-    sprintf(ascii, "%d", intermediate_pairs[i].key);
-    output_pairs[(int) ascii].value += intermediate_pairs[i].value;
+    sprintf(ascii, "%d", *(intermediate_pairs[i].key));
+    output_pairs[strtol(ascii, NULL, 10) - 65].value += intermediate_pairs[i].value;
   }
   return output_pairs;
 }

@@ -111,7 +111,7 @@ void* startWorker(void* arguments)
 
         char content[4096]; 
         char line[1024];
-        char path[100] = "./mapreduce/file_part";
+        char path[100] = "./file_part";
         char* finalpath = strcat(path, args);
         FILE* fp = fopen(finalpath,"r");
         while (fgets(line, sizeof line, fp) != NULL) {
@@ -123,7 +123,7 @@ void* startWorker(void* arguments)
         struct int_pair * results = (struct int_pair *)malloc(sizeof(struct int_pair)*function_args->length);
         results = (*function_args->map)(file);
 
-        char wpath[100] = "./mapreduce/intermediate";
+        char wpath[100] = "./intermediate";
         char s_name[10];
         sprintf(s_name, "%d", function_args->name);
         strcat(wpath, s_name);
@@ -152,13 +152,18 @@ void* startWorker(void* arguments)
         /*   totalsize+=sz; */
         /* } */
         /* printf("path: %s\n", paths[0]); */
-        struct int_pair* input = malloc(sizeof(struct int_pair)*(26)); // -2 is to ignore null-terminating chars
+        struct int_pair* input = malloc(sizeof(struct int_pair)*(26));
 
-        FILE* fptr = fopen("./mapreduce/intermediate0", "r");
+        FILE* fptr = fopen("./intermediate0", "r");
         get_output_file_portion(fptr, input, 0, 5);
-
+        input[1].key = "A";
         for (int i = 0; i < 5; i++) {
           printf("%s %i\n", input[i].key, input[i].value);
+        }
+        struct int_pair* results; //= malloc(sizeof(struct int_pair)*(26));
+        results = (*function_args->reduce)(input);
+        for (int i = 0; i < 5; i++) {
+          printf("%s %i\n", results[i].key, results[i].value);
         }
       }
     }
