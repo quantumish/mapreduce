@@ -46,26 +46,24 @@ static int alphcmp(const void* ptr1, const void* ptr2)
   return (strcmp(*str1, *str2));
 }
 
-static void sort_file(FILE* final, FILE* input)
+static void sort_file(char* final, char* path)
 {
-  int lines = 0;
+  FILE* input = fopen(path, "r");
   char line[MAXLINE];
-  /* rewind(input); */
-  /* while (fgets(line, sizeof(line), input)) { */
-  /*   lines++; */
-  /* } */
-  while (EOF != (fscanf(input, "%*[^\n]"), fscanf(input,"%*c")))
-    ++lines;
-  printf("? %i\n", lines);
-  rewind(input);
-  char* list[lines];
-  for (int i = 0; i < lines; i++)  {
-    fread(line, sizeof(char), BUFSIZE, input);
-    list[i] = line;
+  int length = 0;
+  while (fgets(line, sizeof(line), input)) {
+    length++;
   }
-  qsort(list, lines, sizeof (char*), alphcmp);
-  for (int i = 0; i < lines; i++) {
-    printf("%s\n", list[i]);
+  rewind(input);
+  char* tmp = malloc(MAXLINE * sizeof(char));
+  char* list[length];
+  for (int i = 0; i < length; i++)  {
+    fgets(list[i], BUFSIZE, input);
+    list[i][strlen(list[i]) - 1] = '\0';
+  }
+  qsort(list, length, sizeof (char*), alphcmp);
+  for (int i = 0; i < length; i++) {
+    printf("LINE %s", list[i]);
   }
   /* fwrite(line, sizeof(char), write_sz, final); */
 }
@@ -169,19 +167,19 @@ void* startWorker(void* arguments)
         aggregate_outputs(aggregate, split_args[0]);
 
         FILE* sorted = fopen("./sorted0", "w");
-        sort_file(sorted, aggregate);
+        sort_file(sorted, "./aggregate0");
 
         struct int_pair* input = malloc(sizeof(struct int_pair)*(26));
         FILE* fptr = fopen("./intermediate0", "r");
         get_output_file_portion(fptr, input, 0, 5);
         input[1].key = "A";
         for (int i = 0; i < 5; i++) {
-          printf("%s %i\n", input[i].key, input[i].value);
+          /* printf("%s %i\n", input[i].key, input[i].value); */
         }
         struct int_pair* results; //= malloc(sizeof(struct int_pair)*(26));
         results = (*function_args->reduce)(input);
         for (int i = 0; i < 5; i++) {
-          printf("%s %i\n", results[i].key, results[i].value);
+          /* printf("%s %i\n", results[i].key, results[i].value); */
         }
       }
     }
