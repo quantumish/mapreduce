@@ -46,25 +46,33 @@ static int alphcmp(const void* ptr1, const void* ptr2)
   return (strcmp(*str1, *str2));
 }
 
-static void sort_file(char* final, char* path)
+static void sort_file(char* final, char* path, int name)
 {
   FILE* input = fopen(path, "r");
-  char line[MAXLINE];
   int length = 0;
+  char line[MAXLINE];
   while (fgets(line, sizeof(line), input)) {
     length++;
   }
   rewind(input);
-  char* tmp = malloc(MAXLINE * sizeof(char));
   char* list[length];
-  for (int i = 0; i < length; i++)  {
+  for (int i = 0; i < length; i++) {
+    list[i] = malloc(sizeof(char)*MAXLINE);
     fgets(list[i], BUFSIZE, input);
-    list[i][strlen(list[i]) - 1] = '\0';
   }
   qsort(list, length, sizeof (char*), alphcmp);
+  char finalpath[10] = "./sorted";
+  char s_name[10];
+  sprintf(s_name, "%d", name);
+  strcat(finalpath, s_name);
+  printf("finalpath: %s\n", finalpath);
+  FILE* sorted = fopen(finalpath, "wr");
   for (int i = 0; i < length; i++) {
-    printf("LINE %s", list[i]);
+    printf("Writing %s", list[i]);
+    fprintf(sorted, "%s", list[i]);
   }
+  fclose(sorted);
+  fclose(input);
   /* fwrite(line, sizeof(char), write_sz, final); */
 }
 
@@ -167,7 +175,7 @@ void* startWorker(void* arguments)
         aggregate_outputs(aggregate, split_args[0]);
 
         FILE* sorted = fopen("./sorted0", "w");
-        sort_file(sorted, "./aggregate0");
+        sort_file(sorted, "./aggregate0", function_args->name);
 
         struct int_pair* input = malloc(sizeof(struct int_pair)*(26));
         FILE* fptr = fopen("./intermediate0", "r");
