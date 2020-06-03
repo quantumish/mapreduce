@@ -10,26 +10,6 @@
 
 // FIXME DESTROY ME I SHOULD NOT EXIST CAST ME INTO THE FLAMES I AM A SYMPTOM OF TERRIBLE CODE
 // Used from https://stackoverflow.com/questions/26620388/c-substrings-c-string-slicing
-static void slice_string(char * str, char * buffer, size_t start, size_t end)
-{
-    size_t j = 0;
-    for ( size_t i = start; i <= end; ++i ) {
-        buffer[j++] = str[i];
-    }
-    buffer[j] = 0;
-}
-
-static char* substr(const char *src, int m, int n)
-{
-    int len = n - m;
-    char *dest = malloc(sizeof(char) * (len + 1));
-    for (int i = m; i < n && (*(src + i) != '\0'); i++) {
-        *dest = *(src + i);
-        dest++;
-    }
-    *dest = '\0';
-    return dest - len;
-}
 
 static void set_output_file(char* path, struct int_pair * pair_list, int length)
 {
@@ -96,13 +76,10 @@ void* startWorker(void* arguments)
       if (strcmp(buf, "Ping")==0) {
         sendto(s, "Pong", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
-      char direction[7];
+      char direction[7]; // Direction is either Map or Reduce so longer than 7 (to compensate for \0) is not needed
       char args[BUFSIZE];
-      // FIXME There should not be two separate functions for slicing a string that only work in certain circumstances. Write your own.
-      strcpy(direction, substr(buf, 0, 6));
-      slice_string(buf, args, 6, recvlen-1); /* strcpy(args, substr(buf, 6, recvlen)); */
-      /* printf("%s\n", args); */
-      if (strcmp(direction, "Map---")==0) {
+      sscanf(buf, "%s %s", direction, args);
+      if (strcmp(direction, "Map")==0) {
         printf("Worker%i | Starting map of %s.\n", function_args->name, args);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
 
@@ -134,11 +111,19 @@ void* startWorker(void* arguments)
       else if (strcmp(direction, "Reduce") == 0) {
         printf("Worker%i | Starting reduce.\n", function_args->name);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
+        int split_args[2];
+        sscanf(args, "%i-%i", &split_args[0], &split_args[1]);
+
+        for (int i = 0; i < split_args[0]; i++) {
+          char* path_base = "/Users/davidfreifeld/projects/mapreduce/intermediate";
+          char s_name[10];
+          sprintf(s_name, "%d", i);
+          char path [strlen(path_base) + strlen(s_name) + 1];
+          strcpy(path, path_base);
+          strcat(path, s_name);
+        }
 
         /* int totalsize = 0; */
-        /* char split_args[2][2]; */
-        /* sscanf(args, "%s %s", split_args[0], split_args[1]); */
-        /* char* path_base = "/Users/davidfreifeld/projects/mapreduce/intermediate"; */
         /* char* paths[2]; */
         /* for (int i = 0; i < 2; i++) { */
         /*   char temp_path[100]; */

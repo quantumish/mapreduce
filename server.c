@@ -103,7 +103,7 @@ void* startServer(void* m)
             if (strcmp(values[i].status, "Idle")==0) {
               char* order = (char*)malloc(13*sizeof(char));
               remaddr.sin_port = keys[i];
-              sprintf(order, "Map---%i", target);
+              sprintf(order, "Map %i", target);
               sendto(s, order, strlen(order), 0, (struct sockaddr *) &remaddr, addrlen);
               values[i].status = "Waiting";
               values[i].assigned = target;
@@ -136,7 +136,7 @@ void* startServer(void* m)
           for (int i = 0; values[i].status != NULL; i++) {
             if (strcmp(values[i].status, "Idle") == 0) {
               char *order = (char *)malloc(13 * sizeof(char));
-              sprintf(order, "Reduce%i", (int) m);
+              sprintf(order, "Reduce %i-%i", (int) m, target);
               remaddr.sin_port = keys[i];
               sendto(s, order, strlen(order)+1, 0, (struct sockaddr *)&remaddr, addrlen);
               values[i].status = "Waiting";
