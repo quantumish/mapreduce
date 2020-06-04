@@ -97,9 +97,9 @@ static void get_output_file_portion(FILE* fp, struct int_pair* pair_list, int m,
 
 static void retrieve_correct_portion(long piece, long total, char* sorted_path, struct int_pair** input, long length) {
   struct int_pair * pair_list = *input;
-  for (int i = 0; i < 1; i++) {
-    printf("%s %i\n", pair_list[i].key, pair_list[i].value);
-  }
+  /* for (int i = 0; i < 1; i++) { */
+  /*   printf("%s %i\n", pair_list[i].key, pair_list[i].value); */
+  /* } */
   FILE* fptr = fopen(sorted_path, "r");
   char* prevline = malloc(MAXLINE * sizeof(char));
   char* line = malloc(MAXLINE * sizeof(char));
@@ -122,9 +122,9 @@ static void retrieve_correct_portion(long piece, long total, char* sorted_path, 
   get_output_file_portion(fptr, pair_list, range[0], range[1]);
   pair_list[range[1]-range[0]].key = '\0';
   pair_list[range[1]-range[0]].value = -1;
-  for (int i = 0; i < (range[1])-range[0] + 1; i++) {
-    printf("%i %s %i\n", i, pair_list[i].key, pair_list[i].value);
-  }
+  /* for (int i = 0; i < (range[1])-range[0] + 1; i++) { */
+  /*   printf("%i %s %i\n", i, pair_list[i].key, pair_list[i].value); */
+  /* } */
 }
 // This tutorial helped quite a bit in debugging what was going wrong with connection
 // https://www.geeksforgeeks.org/udp-server-client-implementation-c/
@@ -218,11 +218,18 @@ void* startWorker(void* arguments)
         retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
         struct int_pair* out = malloc(sizeof(struct int_pair)*(sort_len+1));
         out = (*function_args->reduce)(in);
-
+        /* printf("%s %i\n", out[1].key, out[1].value); */
         char out_path[20] = "./out";
         strcat(out_path, s_name);
-        int portion_len = (long) split_args[0] / (long) split_args[1];
-        set_output_file(out_path, out, portion_len);
+
+        int reduce_len = 0;
+        for (int i = 0; out[i].key != NULL; i++) {
+          /* printf("key : %s\n", out[i].key); */
+          reduce_len++;
+        }
+        
+        set_output_file(out_path, out, reduce_len);
+        sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
     }
   }
