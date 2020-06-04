@@ -109,6 +109,7 @@ void startServer(void* m)
               values[i].status = "Waiting";
               values[i].assigned = target;
               mapped[values[i].assigned] = -1;
+              break;
             }
           }
         }
@@ -143,6 +144,7 @@ void startServer(void* m)
               values[i].status = "Waiting";
               values[i].assigned = target;
               reduced[target] = -1;
+              break;
             }
           }
         }

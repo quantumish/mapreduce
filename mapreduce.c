@@ -84,7 +84,7 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
   printf("MAINLIB | Created server thread.\n");
 
 
-  for (int i = 0; i < m-1; i++) {
+  for (int i = 0; i < m; i++) {
     pthread_t worker;
     // Trickery with structs as pthread_create only allows one argument to function for some reason.
     struct args * pass_args = malloc(sizeof(struct args));
@@ -100,7 +100,6 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
 
   FILE* finalagg = fopen("./finalaggregate", "w");
   char agg_base[20] = "./out";
-  printf("CALLIn\n");
   aggregate_outputs(finalagg, agg_base, (int)m);
   char final[20] = "./final";
   sort_file(final, "./finalaggregate", 0);

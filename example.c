@@ -24,8 +24,8 @@ struct int_pair* map (struct str_pair input_pair)
       count++;
       tmp++;
     }
-    if (i < 10) {
-      printf("%i %s in %s", count, upper, input_pair.value);
+    if (i < 26) {
+      /* printf("%i %s in %s", count, upper, input_pair.value); */
     }
     struct int_pair letter = {upper, count};
     output_pairs[i] = letter;

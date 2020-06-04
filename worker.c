@@ -180,8 +180,9 @@ void* startWorker(void* arguments)
         char path[100] = "./file_part";
         char* finalpath = strcat(path, args);
         FILE* fp = fopen(finalpath,"r");
-        while (fgets(line, sizeof line, fp) != NULL) {
-          printf("%s:%s",finalpath,line);
+        while (fgets(line, MAXLINE, fp) != NULL) {
+          /* fgets(line, MAXLINE, fp); */
+          printf("%s:%s\n",finalpath,line);
           strcat(content, line);
         }
         fclose(fp);
