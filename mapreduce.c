@@ -29,6 +29,8 @@ void handler(int sig) {
 
 /* Splits input file into num_splits subfiles for parallelization accross computers and CPUs */
 void split(char* path, int num_splits) {
+  printf("MAINLIB | Beginning split of file into %i pieces.\n", num_splits);
+
   FILE *rptr;
   rptr = fopen(path, "r");
   if (rptr==NULL) {
@@ -62,6 +64,7 @@ void split(char* path, int num_splits) {
     linecounter++;
   }
   fclose(rptr);
+  printf("MAINLIB | \x1B[0;32mSplitting complete.\x1B[0;37m \n");
 }
 
 void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length)
@@ -77,7 +80,9 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
   pthread_t server;
   int ret1;
   ret1 = pthread_create(&server, NULL, startServer, (void *) m);
- 
+  printf("MAINLIB | Created server thread.\n");
+
+
   for (int i = 0; i < m-1; i++) {
     pthread_t worker;
     // Trickery with structs as pthread_create only allows one argument to function for some reason.
@@ -87,6 +92,8 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
     pass_args->reduce = reduce;
     pass_args->length = length;
     pthread_create(&worker, NULL, startWorker, (void *) pass_args);
+    printf("MAINLIB | Created worker thread #%i.\n", i);
+
   }
   pthread_join(server, NULL);
   printf("MAINLIB | \x1B[0;32mComplete!\x1B[0;37m \n");

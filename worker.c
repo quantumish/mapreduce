@@ -220,7 +220,9 @@ void* startWorker(void* arguments)
         out = (*function_args->reduce)(in);
         
         char out_path[20] = "./out";
-        strcat(out_path, s_name);
+        char str_assigned[10];
+        sprintf(str_assigned, "%d", split_args[1]);
+        strcat(out_path, str_assigned);
         int reduce_len = 0;
         for (int i = 0; out[i].key != NULL; i++) {
           reduce_len++;
