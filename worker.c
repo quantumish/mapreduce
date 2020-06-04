@@ -18,9 +18,6 @@ static void set_output_file(char* path, struct int_pair * pair_list, int length)
   fclose(wptr);
 }
 
-static void retrieve_portion(char* total, char* piece) {
-
-}
 
 static void aggregate_outputs(FILE* final, int max_name)
 {
@@ -93,6 +90,20 @@ static void get_output_file_portion(FILE* fp, struct int_pair* pair_list, int m,
   }
 }
 
+static void retrieve_portion(int total, int piece, char* sorted_path, struct int_pair* pair_list) {
+  FILE* fptr = fopen(sorted_path, "r");
+  char* prevline = malloc(MAXLINE * sizeof(char));
+  char* line = malloc(MAXLINE * sizeof(char));
+  while (fgets(line, sizeof(line), fptr)) {
+    printf("LINE %s vs PREV %s", line, prevline);
+    strcpy(prevline, line);
+  }
+  get_output_file_portion(fptr, pair_list, 0, 5);
+  pair_list[1].key = "A";
+  for (int i = 0; i < 5; i++) {
+  /* printf("%s %i\n", pair_list[i].key, pair_list[i].value); */
+  }
+}
 // This tutorial helped quite a bit in debugging what was going wrong with connection
 // https://www.geeksforgeeks.org/udp-server-client-implementation-c/
 
@@ -168,7 +179,7 @@ void* startWorker(void* arguments)
       }
       else if (strcmp(direction, "Reduce") == 0) {
         printf("Worker%i | Starting reduce.\n", function_args->name);
-        sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr))
+        sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
         int split_args[2];
         sscanf(args, "%i-%i", &split_args[0], &split_args[1]);
 
@@ -182,19 +193,13 @@ void* startWorker(void* arguments)
         sort_file(sort_path, agg_path, function_args->name);
 
         struct int_pair* input = malloc(sizeof(struct int_pair)*(27));
+        retrieve_portion(split_args[0], split_args[1], sort_path, input);
 
-        /* FILE* fptr = fopen("./intermediate0", "r"); */
-        /* get_output_file_portion(fptr, input, 0, 5); */
-        /* input[1].key = "A"; */
+        /* struct int_pair* results; //= malloc(sizeof(struct int_pair)*(26)); */
+        /* results = (*function_args->reduce)(input); */
         /* for (int i = 0; i < 5; i++) { */
-          /* printf("%s %i\n", input[i].key, input[i].value); */
+        /*   /\* printf("%s %i\n", results[i].key, results[i].value); *\/ */
         /* } */
-
-        struct int_pair* results; //= malloc(sizeof(struct int_pair)*(26));
-        results = (*function_args->reduce)(input);
-        for (int i = 0; i < 5; i++) {
-          /* printf("%s %i\n", results[i].key, results[i].value); */
-        }
       }
     }
   }
