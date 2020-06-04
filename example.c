@@ -5,8 +5,6 @@
 // A simple map function for mapping <word, string> to <word, count>.
 struct int_pair* map (struct str_pair input_pair)
 {
-  /* struct int_pair ex = {"/", 0}; */
-  /* struct int_pair output_pairs[26] = {ex}; */
   struct int_pair * output_pairs = malloc(sizeof(struct int_pair)*26);
   for (int i = 0; i < 26; i++) {
     char * lower = malloc(sizeof(char)*2);
@@ -23,9 +21,6 @@ struct int_pair* map (struct str_pair input_pair)
     while (tmp = strstr(tmp, upper)) {
       count++;
       tmp++;
-    }
-    if (i < 26) {
-      /* printf("%i %s in %s", count, upper, input_pair.value); */
     }
     struct int_pair letter = {upper, count};
     output_pairs[i] = letter;
@@ -64,12 +59,11 @@ struct int_pair * reduce(struct int_pair* intermediate_pairs)
       filtered_pairs[j].key = output_pairs[i].key;
       j++;
     }
-    /* printf("%s:%i vs %s:%i\n",output_pairs[i].key, output_pairs[i].value, filtered_pairs[i].key,filtered_pairs[i].value); */
   }
   return filtered_pairs;
 }
 
 int main()
 {
-  begin("./testing.txt", map, reduce, 8, 26);
+  begin("./testing.txt", map, reduce, 12, 26);
 }

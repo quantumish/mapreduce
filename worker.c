@@ -180,11 +180,15 @@ void* startWorker(void* arguments)
         char path[100] = "./file_part";
         char* finalpath = strcat(path, args);
         FILE* fp = fopen(finalpath,"r");
-        while (fgets(line, MAXLINE, fp) != NULL) {
-          /* fgets(line, MAXLINE, fp); */
+        rewind(fp);
+        fwrite("\n", sizeof(char), 2, fp);
+        printf("FP VAL for %s is %i\n", finalpath, fp);
+        while (fgets(line, MAXLINE, fp)) {
+           /* fgets(line, MAXLINE, fp); */
           printf("%s:%s\n",finalpath,line);
           strcat(content, line);
         }
+        printf("final %s:%s\n",finalpath,content);
         fclose(fp);
 
         struct str_pair file = {finalpath, content};
