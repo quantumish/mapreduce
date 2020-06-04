@@ -214,21 +214,15 @@ void* startWorker(void* arguments)
         strcat(sort_path, s_name);
         int sort_len = sort_file(sort_path, agg_path, function_args->name);
 
-        printf("sort len %i\n", sort_len);
         struct int_pair* in = malloc(sizeof(struct int_pair)*(sort_len+1));
-        in[1].key = "abc";
-        in[1].value = 2138;
-        /* printf("Initial key-pair %s %i\n", in[1].key, in[1].value); */
         retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
-        /* in = malloc(sizeof(struct int_pair)*(sort_len+1)); */
         struct int_pair* out = malloc(sizeof(struct int_pair)*(sort_len+1));
-        /* printf("Key-pair %s %i\n", in[1].key, in[1].value); */
-        /* (*function_args->reduce)(in); */
+        out = (*function_args->reduce)(in);
 
-        /* char out_path[20] = "./out"; */
-        /* strcat(out_path, s_name); */
-        /* int portion_len = (long) split_args[0] / (long) split_args[1]; */
-        /* set_output_file(out_path, out, portion_len); */
+        char out_path[20] = "./out";
+        strcat(out_path, s_name);
+        int portion_len = (long) split_args[0] / (long) split_args[1];
+        set_output_file(out_path, out, portion_len);
       }
     }
   }
