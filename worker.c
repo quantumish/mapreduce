@@ -81,19 +81,25 @@ static void get_output_file_portion(FILE* fp, struct int_pair* pair_list, int m,
 {
   char line[MAXLINE];
   int i = 0;
+  int j = 0;
   rewind(fp);
   while (fgets(line, MAXLINE, fp) != NULL) {
     if ((i >= m) && (i < n)) {
       struct int_pair *ret = malloc(sizeof(struct int_pair));
       ret->key = malloc(sizeof(char) * MAXLINE);
       sscanf(line, "%s%d", ret->key, &(ret->value));
-      pair_list[i] = *ret;
+      pair_list[j] = *ret;
+      j++;
     }
     i++;
   }
 }
 
-static void retrieve_correct_portion(long piece, long total, char* sorted_path, struct int_pair* pair_list, long length) {
+static void retrieve_correct_portion(long piece, long total, char* sorted_path, struct int_pair** input, long length) {
+  struct int_pair * pair_list = *input;
+  for (int i = 0; i < 1; i++) {
+    printf("%s %i\n", pair_list[i].key, pair_list[i].value);
+  }
   FILE* fptr = fopen(sorted_path, "r");
   char* prevline = malloc(MAXLINE * sizeof(char));
   char* line = malloc(MAXLINE * sizeof(char));
@@ -114,10 +120,10 @@ static void retrieve_correct_portion(long piece, long total, char* sorted_path, 
     if (i > range[1]) range[1] = i;
   }
   get_output_file_portion(fptr, pair_list, range[0], range[1]);
-  pair_list[length].key = '\0';
-  pair_list[length].value = -1;
-  for (int i = range[0]; i < range[1]+1; i++) {
-    printf("%s %i\n", pair_list[i].key, pair_list[i].value);
+  pair_list[range[1]-range[0]].key = '\0';
+  pair_list[range[1]-range[0]].value = -1;
+  for (int i = 0; i < (range[1])-range[0] + 1; i++) {
+    printf("%i %s %i\n", i, pair_list[i].key, pair_list[i].value);
   }
 }
 // This tutorial helped quite a bit in debugging what was going wrong with connection
@@ -210,10 +216,13 @@ void* startWorker(void* arguments)
 
         printf("sort len %i\n", sort_len);
         struct int_pair* in = malloc(sizeof(struct int_pair)*(sort_len+1));
-        retrieve_correct_portion(split_args[1], split_args[0], sort_path, in, sort_len);
+        in[1].key = "abc";
+        in[1].value = 2138;
+        /* printf("Initial key-pair %s %i\n", in[1].key, in[1].value); */
+        retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
         /* in = malloc(sizeof(struct int_pair)*(sort_len+1)); */
-        printf("Key-pair %s %i\n", in[1].key, in[1].value);
         struct int_pair* out = malloc(sizeof(struct int_pair)*(sort_len+1));
+        /* printf("Key-pair %s %i\n", in[1].key, in[1].value); */
         /* (*function_args->reduce)(in); */
 
         /* char out_path[20] = "./out"; */
