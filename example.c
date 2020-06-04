@@ -37,6 +37,7 @@ struct int_pair* map (struct str_pair input_pair)
 struct int_pair * reduce(struct int_pair* intermediate_pairs)
 {
   struct int_pair * output_pairs = malloc(sizeof(struct int_pair)*27);
+  struct int_pair * filtered_pairs = malloc(sizeof(struct int_pair)*27);
   for (int i = 0; i < 26; i++) {
     char * upper = malloc(sizeof(char)*2);
     sprintf(upper, "%c", i + 65);
@@ -53,7 +54,16 @@ struct int_pair * reduce(struct int_pair* intermediate_pairs)
   }
   output_pairs[26].key = '\0';
   output_pairs[26].value = -1;
-  return output_pairs;
+  int j = 0;
+  for (int i = 0; i < 27; i++) {
+    if (output_pairs[i].value != 0) {
+      filtered_pairs[j].value = output_pairs[i].value;
+      filtered_pairs[j].key = output_pairs[i].key;
+      j++;
+    }
+    printf("%s:%i vs %s:%i\n",output_pairs[i].key, output_pairs[i].value, filtered_pairs[i].key,filtered_pairs[i].value);
+  }
+  return filtered_pairs;
 }
 
 int main()

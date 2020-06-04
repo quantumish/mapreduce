@@ -8,6 +8,15 @@
 #define WORKER_H
 
 #include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <math.h>
+
 
 #define PORT 5000
 #define BUFSIZE 2048
@@ -34,7 +43,8 @@ struct args
 };
 
 
-void sliceString(char * str, char * buffer, size_t start, size_t end);
+void aggregate_outputs(FILE* final, char* path_base, int max_name);
+int sort_file(char* finalpath, char* path, int name);
 void* startWorker(void* arguments);
 
 #endif /* MODULE_H */

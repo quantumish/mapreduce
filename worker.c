@@ -20,20 +20,23 @@ static void set_output_file(char* path, struct int_pair * pair_list, int length)
 }
 
 
-static void aggregate_outputs(FILE* final, int max_name)
+void aggregate_outputs(FILE* final, char* path_base, int max_name)
 {
   char line[BUFSIZE];
+  printf("Max %i\n", max_name);
   for (int i = 0; i < max_name; i++) {
-    char* path_base = "./intermediate";
     char s_name[10];
     sprintf(s_name, "%d", i);
     char path [strlen(path_base) + strlen(s_name) + 1];
     strcpy(path, path_base);
     strcat(path, s_name);
+    printf("Opening %s\n", path);
     FILE* fptr = fopen(path, "r");
     // Modified from https://stackoverflow.com/questions/11384032/merge-n-files-using-a-c-program/11384194
+    rewind(fptr);
     int write_sz;
     while ((write_sz = fread(line, sizeof(char), BUFSIZE, fptr))) {
+      printf("Writing %s\n", line);
       fwrite(line, sizeof(char), write_sz, final);
     }
     fclose(fptr);
@@ -48,7 +51,7 @@ static int alphcmp(const void* ptr1, const void* ptr2)
   return (strcmp(*str1, *str2));
 }
 
-static int sort_file(char* final, char* path, int name)
+int sort_file(char* finalpath, char* path, int name)
 {
   FILE* input = fopen(path, "r");
   int length = 0;
@@ -63,7 +66,6 @@ static int sort_file(char* final, char* path, int name)
     fgets(list[i], BUFSIZE, input);
   }
   qsort(list, length, sizeof (char*), alphcmp);
-  char finalpath[10] = "./sorted";
   char s_name[10];
   sprintf(s_name, "%d", name);
   strcat(finalpath, s_name);
@@ -207,15 +209,16 @@ void* startWorker(void* arguments)
 
         char agg_path[20] = "./aggregate";
         strcat(agg_path, s_name);
+        char* path_base = "./intermediate";
         FILE* aggregate = fopen(agg_path, "w");
-        aggregate_outputs(aggregate, split_args[0]);
+        aggregate_outputs(aggregate, path_base, split_args[0]);
 
-        char sort_path[20] = "./sorted";
-        strcat(sort_path, s_name);
-        int sort_len = sort_file(sort_path, agg_path, function_args->name);
+        char sort_base[20] = "./sorted";
+        strcat(sort_base, s_name);
+        int sort_len = sort_file(sort_base, agg_path, function_args->name);
 
         struct int_pair* in = malloc(sizeof(struct int_pair)*(sort_len+1));
-        retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
+        retrieve_correct_portion(split_args[1], split_args[0], sort_base, &in, sort_len);
         struct int_pair* out = malloc(sizeof(struct int_pair)*(sort_len+1));
         out = (*function_args->reduce)(in);
         
