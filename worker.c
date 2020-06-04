@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <math.h>
 
 #include "worker.h"
 
@@ -47,7 +48,7 @@ static int alphcmp(const void* ptr1, const void* ptr2)
   return (strcmp(*str1, *str2));
 }
 
-static void sort_file(char* final, char* path, int name)
+static int sort_file(char* final, char* path, int name)
 {
   FILE* input = fopen(path, "r");
   int length = 0;
@@ -72,6 +73,7 @@ static void sort_file(char* final, char* path, int name)
   }
   fclose(sorted);
   fclose(input);
+  return length;
 }
 
 
@@ -90,13 +92,25 @@ static void get_output_file_portion(FILE* fp, struct int_pair* pair_list, int m,
   }
 }
 
-static void retrieve_portion(int total, int piece, char* sorted_path, struct int_pair* pair_list) {
+static void retrieve_correct_portion(long piece, long total, char* sorted_path, struct int_pair* pair_list, long length) {
   FILE* fptr = fopen(sorted_path, "r");
   char* prevline = malloc(MAXLINE * sizeof(char));
   char* line = malloc(MAXLINE * sizeof(char));
+  int i = 0;
   while (fgets(line, sizeof(line), fptr)) {
-    printf("LINE %s vs PREV %s", line, prevline);
+    char* key = malloc(MAXLINE * sizeof(char));
+    char* junk = malloc(MAXLINE * sizeof(char));
+    sscanf(line, "%s %s", key, junk);
+    strcpy(line, key);
+    printf((i >= (piece*length)/total) ? "i past min\n" : "i not past min\n");
+    printf((i <= ((1+piece)*length)/total) ? "i before max\n" : "i after max\n");
+    printf((i >= (strcmp(line, prevline)!=0)) ? "line and prev diff\n" : "line and prev same\n");
+    if ((i >= (piece*length)/total) && (i <= ((1+piece)*length)/total) && (strcmp(line, prevline)!=0)) {
+      printf("Write %s", line);
+    }
+    printf("\n\n\n");
     strcpy(prevline, line);
+    i++;
   }
   get_output_file_portion(fptr, pair_list, 0, 5);
   pair_list[1].key = "A";
@@ -190,10 +204,10 @@ void* startWorker(void* arguments)
 
         char sort_path[20] = "./sorted";
         strcat(sort_path, s_name);
-        sort_file(sort_path, agg_path, function_args->name);
+        int sort_len = sort_file(sort_path, agg_path, function_args->name);
 
         struct int_pair* input = malloc(sizeof(struct int_pair)*(27));
-        retrieve_portion(split_args[0], split_args[1], sort_path, input);
+        retrieve_correct_portion(split_args[1], split_args[0], sort_path, input, sort_len);
 
         /* struct int_pair* results; //= malloc(sizeof(struct int_pair)*(26)); */
         /* results = (*function_args->reduce)(input); */

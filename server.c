@@ -133,7 +133,7 @@ void* startServer(void* m)
           }
         }
         if (target != -1) {
-          for (int i = 0; i < (int) m-1; i++) {
+          for (int i = 0; values[i].status != NULL; i++) {
             if (strcmp(values[i].status, "Idle") == 0) {
               char *order = (char *)malloc(13 * sizeof(char));
               sprintf(order, "Reduce %i-%i", (int) m, target);
