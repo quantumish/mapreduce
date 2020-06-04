@@ -97,25 +97,26 @@ static void retrieve_correct_portion(long piece, long total, char* sorted_path, 
   char* prevline = malloc(MAXLINE * sizeof(char));
   char* line = malloc(MAXLINE * sizeof(char));
   int i = 0;
+  int beginning = length;
+  int end = 0;
   while (fgets(line, sizeof(line), fptr)) {
-    char* key = malloc(MAXLINE * sizeof(char));
-    char* junk = malloc(MAXLINE * sizeof(char));
-    sscanf(line, "%s %s", key, junk);
+    char* key  = malloc(MAXLINE * sizeof(char));
+    sscanf(line, "%s *s", key);
     strcpy(line, key);
-    printf((i >= (piece*length)/total) ? "i past min\n" : "i not past min\n");
-    printf((i <= ((1+piece)*length)/total) ? "i before max\n" : "i after max\n");
-    printf((i >= (strcmp(line, prevline)!=0)) ? "line and prev diff\n" : "line and prev same\n");
+    /* printf((i >= (piece*length)/total) ? "i past min\n" : "i not past min\n"); */
+    /* printf((i <= ((1+piece)*length)/total) ? "i before max\n" : "i after max\n"); */
+    /* printf((i >= (strcmp(line, prevline)!=0)) ? "line and prev diff\n" : "line and prev same\n"); */
     if ((i >= (piece*length)/total) && (i <= ((1+piece)*length)/total) && (strcmp(line, prevline)!=0)) {
-      printf("Write %s", line);
+      if (i < beginning) beginning = i;
+      else if (i > end) end = i;
     }
-    printf("\n\n\n");
+    printf("%i and %i\n", beginning, end);
     strcpy(prevline, line);
     i++;
   }
-  get_output_file_portion(fptr, pair_list, 0, 5);
-  pair_list[1].key = "A";
+  get_output_file_portion(fptr, pair_list, beginning, end);
   for (int i = 0; i < 5; i++) {
-  /* printf("%s %i\n", pair_list[i].key, pair_list[i].value); */
+    /* printf("%s %i\n", pair_list[i].key, pair_list[i].value); */
   }
 }
 // This tutorial helped quite a bit in debugging what was going wrong with connection
