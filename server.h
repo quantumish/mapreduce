@@ -18,6 +18,6 @@
 #include <arpa/inet.h>
 
 void sliceString(char * str, char * buffer, size_t start, size_t end);
-void* startServer(void* m);
+void startServer(void* m);
 
 #endif /* MODULE_H */

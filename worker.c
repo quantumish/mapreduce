@@ -218,13 +218,11 @@ void* startWorker(void* arguments)
         retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
         struct int_pair* out = malloc(sizeof(struct int_pair)*(sort_len+1));
         out = (*function_args->reduce)(in);
-        /* printf("%s %i\n", out[1].key, out[1].value); */
+        
         char out_path[20] = "./out";
         strcat(out_path, s_name);
-
         int reduce_len = 0;
         for (int i = 0; out[i].key != NULL; i++) {
-          /* printf("key : %s\n", out[i].key); */
           reduce_len++;
         }
         

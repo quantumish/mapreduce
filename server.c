@@ -7,7 +7,7 @@
 // worker availability, and instructs workers on what to do. General reference for the UDP server:
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
 
-void* startServer(void* m)
+void startServer(void* m)
 {
   printf(" SERVER | \x1B[0;32mServer online.\x1B[0;37m\n");
   // Socket being created
@@ -37,8 +37,8 @@ void* startServer(void* m)
   unsigned char buf[BUFSIZE];
   // List to track which files have been mapped. 0 = unmapped, 1 = mapped, -1 = in-progress.
 
-  int mapped[(int) m];
-  int reduced[(int) m];
+  int* mapped = malloc((int) m * sizeof(int));
+  int* reduced = malloc((int) m * sizeof(int));
 
   // Initialize mapped list to prevent bugs
   for (int i = 0; i < (int) m; i++)
@@ -78,8 +78,8 @@ void* startServer(void* m)
         for (int i = 0; i <= deviceCounter; i++) {
           if (keys[i] == remaddr.sin_port) {
             values[i].status = "Idle";
-
-            mapped[values[i].assigned] = 1;
+            if (phase == 0) mapped[values[i].assigned] = 1;
+            if (phase == 1) reduced[values[i].assigned] = 1;
             values[i].assigned = -1;
             break;
           }
@@ -127,6 +127,7 @@ void* startServer(void* m)
         for (int i = 0; i < (int) m; i++) {
           if (reduced[i] == 0) {
             target = i;
+            break;
           }
           if (reduced[i] == 0 || reduced[i] == -1) {
             prog = 1;
@@ -144,6 +145,10 @@ void* startServer(void* m)
               reduced[target] = -1;
             }
           }
+        }
+        else if (prog == -1) {
+          printf(" SERVER | \x1B[0;32mReducing complete.\x1B[0;37m \n");
+          break;
         }
       }
     }

@@ -36,7 +36,7 @@ struct int_pair* map (struct str_pair input_pair)
 /* proof-of-concept. */
 struct int_pair * reduce(struct int_pair* intermediate_pairs)
 {
-  struct int_pair * output_pairs = malloc(sizeof(struct int_pair)*26);
+  struct int_pair * output_pairs = malloc(sizeof(struct int_pair)*27);
   for (int i = 0; i < 26; i++) {
     char * upper = malloc(sizeof(char)*2);
     sprintf(upper, "%c", i + 65);
@@ -46,12 +46,13 @@ struct int_pair * reduce(struct int_pair* intermediate_pairs)
   int i = 0;
   char ascii[3];
   sprintf(ascii, "%d", *(intermediate_pairs[0].key));
-  // HACK/FIXME Uses temp value, change to null-terminating of struct lists
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; intermediate_pairs[i].key != NULL; i++) {
     char ascii[3];
     sprintf(ascii, "%d", *(intermediate_pairs[i].key));
     output_pairs[strtol(ascii, NULL, 10) - 65].value += intermediate_pairs[i].value;
   }
+  output_pairs[26].key = '\0';
+  output_pairs[26].value = -1;
   return output_pairs;
 }
 
