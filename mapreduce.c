@@ -41,8 +41,8 @@ void split(char* path, int num_splits) {
   char line[MAXLINE];
   FILE *wptr;
   int filecounter=0;
-  int linecounter=1;
-  int linecount=1;
+  int linecounter=0;
+  int linecount=0;
   sprintf(fileoutputname, "file_part%d", filecounter);
   wptr = fopen(fileoutputname, "w");
   while (fgets(line, sizeof line, rptr) != NULL) {
@@ -50,10 +50,11 @@ void split(char* path, int num_splits) {
   }
   rewind(rptr);
   // Based off of https://www.codingunit.com/c-tutorial-splitting-a-text-file-into-multiple-files
+  printf("Split line at %d vs\n",  linecount /  num_splits);
   while (fgets(line, sizeof line, rptr) != NULL) {
-    if (linecounter == round((float) linecount / (float) num_splits)) {
+    if (linecounter == linecount /  num_splits) {
       fclose(wptr);
-      linecounter = 1;
+      linecounter = 0;
       filecounter++;
       sprintf(fileoutputname, "file_part%d", filecounter);
       wptr = fopen(fileoutputname, "w");
@@ -96,5 +97,12 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
 
   }
   pthread_join(server, NULL);
+
+  FILE* finalagg = fopen("./finalaggregate", "w");
+  char agg_base[20] = "./out";
+  printf("CALLIn\n");
+  aggregate_outputs(finalagg, agg_base, (int)m);
+  char final[20] = "./final";
+  sort_file(final, "./finalaggregate", 0);
   printf("MAINLIB | \x1B[0;32mComplete!\x1B[0;37m \n");
 }

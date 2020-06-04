@@ -24,6 +24,9 @@ struct int_pair* map (struct str_pair input_pair)
       count++;
       tmp++;
     }
+    if (i < 10) {
+      printf("%i %s in %s", count, upper, input_pair.value);
+    }
     struct int_pair letter = {upper, count};
     output_pairs[i] = letter;
   }
@@ -61,7 +64,7 @@ struct int_pair * reduce(struct int_pair* intermediate_pairs)
       filtered_pairs[j].key = output_pairs[i].key;
       j++;
     }
-    printf("%s:%i vs %s:%i\n",output_pairs[i].key, output_pairs[i].value, filtered_pairs[i].key,filtered_pairs[i].value);
+    /* printf("%s:%i vs %s:%i\n",output_pairs[i].key, output_pairs[i].value, filtered_pairs[i].key,filtered_pairs[i].value); */
   }
   return filtered_pairs;
 }

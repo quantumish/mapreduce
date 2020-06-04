@@ -23,20 +23,17 @@ static void set_output_file(char* path, struct int_pair * pair_list, int length)
 void aggregate_outputs(FILE* final, char* path_base, int max_name)
 {
   char line[BUFSIZE];
-  printf("Max %i\n", max_name);
   for (int i = 0; i < max_name; i++) {
     char s_name[10];
     sprintf(s_name, "%d", i);
     char path [strlen(path_base) + strlen(s_name) + 1];
     strcpy(path, path_base);
     strcat(path, s_name);
-    printf("Opening %s\n", path);
     FILE* fptr = fopen(path, "r");
     // Modified from https://stackoverflow.com/questions/11384032/merge-n-files-using-a-c-program/11384194
     rewind(fptr);
     int write_sz;
     while ((write_sz = fread(line, sizeof(char), BUFSIZE, fptr))) {
-      printf("Writing %s\n", line);
       fwrite(line, sizeof(char), write_sz, final);
     }
     fclose(fptr);
@@ -176,7 +173,6 @@ void* startWorker(void* arguments)
         printf("Worker%i | Starting map of %s.\n", function_args->name, args);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
 
-        // This was miserable. Strings are bothersome enough in C but files take it to a whole new level. Vague segfaults, bus errors, and more.
         // TODO Make this size dynamic/configurable. Also change to relative path. Also this maybe shouldn't be done worker-side.
 
         char content[4096];
@@ -185,6 +181,7 @@ void* startWorker(void* arguments)
         char* finalpath = strcat(path, args);
         FILE* fp = fopen(finalpath,"r");
         while (fgets(line, sizeof line, fp) != NULL) {
+          printf("%s:%s",finalpath,line);
           strcat(content, line);
         }
         fclose(fp);
