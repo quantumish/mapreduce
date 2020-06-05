@@ -1,8 +1,8 @@
 #include "mapreduce.h"
 
-// TODO Make arguments and returns key value pairs instead of just values
-
-// A simple map function for mapping <word, string> to <word, count>.
+// A simple map function for getting case-insensitive letter frequencies
+// by mapping <document, contents> to a list of <letter, count>.
+// Takes str_pair <document, contents>, returns int_pair* to array of <letter, count>
 struct int_pair* map (struct str_pair input_pair)
 {
   struct int_pair * output_pairs = malloc(sizeof(struct int_pair)*26);
@@ -12,10 +12,10 @@ struct int_pair* map (struct str_pair input_pair)
     sprintf(lower, "%c", i + 97);
     sprintf(upper, "%c", i + 65);
     int count = 0;
-    char * tmp = input_pair.value;
-    while(tmp = strstr(tmp, lower)) {
-      count++;
-      tmp++;
+    char * tmp = input_pair.value;    // Modified from https://stackoverflow.com/questions/9052490/find-the-count-of-substring-in-string
+    while(tmp = strstr(tmp, lower)) { // HACK-ish: The while here is a little strange since it's using result of assignment but I understand
+      count++;                        // this shortcut to essentially be checking if strstr(tmp, lower) is NULL or not although I may just want
+      tmp++;                          // to switch to a normal-er looking while loop.
     }
     tmp = input_pair.value;
     while (tmp = strstr(tmp, upper)) {
@@ -28,10 +28,10 @@ struct int_pair* map (struct str_pair input_pair)
   return output_pairs;
 }
 
-/* A simple reduce function for reducing <word, count> to a total count */
-/* This requires summing the list, which you may notice is inefficient! */
-/* We could use MapReduce inside of here as well, but this is merely */
-/* proof-of-concept. */
+// A simple reduce function for reducing a list of <letter, count> to a total count for each letter.
+// Takes int_pair* to array containing <letter, count> and returns int_pair* to array with final counts.
+// NOTE: Expects a sort of 'null-terminated' array of int_pairs, last int_pair's key must be '\0', returns
+// similar type of terminated array.
 struct int_pair * reduce(struct int_pair* intermediate_pairs)
 {
   struct int_pair * output_pairs = malloc(sizeof(struct int_pair)*27);
@@ -65,5 +65,5 @@ struct int_pair * reduce(struct int_pair* intermediate_pairs)
 
 int main()
 {
-  begin("./testing.txt", map, reduce, 12, 26);
+  begin("./valley.txt", map, reduce, 8, 26);
 }

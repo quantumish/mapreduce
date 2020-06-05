@@ -21,6 +21,7 @@
 #define PORT 5000
 #define BUFSIZE 2048
 #define MAXLINE 1024
+#define MAXCONTENT 1000000
 
 struct str_pair
 {

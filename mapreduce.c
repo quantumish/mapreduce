@@ -14,43 +14,42 @@
 
 #define MAXLINE 1024
 
+// Error handling based off of https://stackoverflow.com/questions/77005/how-to-automatically-generate-a-stacktrace-when-my-program-crashes
+// and some man pages. Simply dumps a minimal backtrace to allow me to spare sanity when trying to quickly debug (although lldb is preferable)
 void handler(int sig) {
   void *array[10];
   size_t size;
-
-  // get void*'s for all entries on the stack
   size = backtrace(array, 12);
-
-  // print out all the frames to stderr
   fprintf(stderr, "Error: signal %d:\n", sig);
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   exit(1);
 }
 
-/* Splits input file into num_splits subfiles for parallelization accross computers and CPUs */
+// Very minimal split function that reads specified file and writes it into separate output files beginning with "file_part"
+// Takes char* to path of file to be split and int of number of pieces to split into.
+// NOTE/TODO Could be causing bug, tweak me.
 void split(char* path, int num_splits) {
   printf("MAINLIB | Beginning split of file into %i pieces.\n", num_splits);
-
   FILE *rptr;
   rptr = fopen(path, "r");
   if (rptr==NULL) {
-    printf("Error! File could not be opened.");
+    printf("MAINLIB | Error! File could not be opened.");
     exit(1);
   }
-  char fileoutputname[15];
   char line[MAXLINE];
-  FILE *wptr;
-  int filecounter=0;
-  int linecounter=0;
-  int linecount=0;
+  int linecounter, filecounter, linecount;
+  linecount=filecounter=linecounter=0;
+  char fileoutputname[15];
   sprintf(fileoutputname, "./file_part%d", filecounter);
+  FILE *wptr;
   wptr = fopen(fileoutputname, "w");
   while (fgets(line, sizeof line, rptr) != NULL) {
     linecount++;
   }
+  printf("LINECOUNT: %i\n", linecount);
   rewind(rptr);
   // Based off of https://www.codingunit.com/c-tutorial-splitting-a-text-file-into-multiple-files
-  printf("Split line at %d vs\n",  linecount /  num_splits);
+  printf("MAINLIB | Split line at %d vs\n",  linecount / num_splits);
   while (fgets(line, sizeof line, rptr) != NULL) {
     if (linecounter == linecount /  num_splits) {
       fclose(wptr);
@@ -68,12 +67,13 @@ void split(char* path, int num_splits) {
   printf("MAINLIB | \x1B[0;32mSplitting complete.\x1B[0;37m \n");
 }
 
+// Gateway function between user code and MapReduce. Starts up threads for workers and server.
+//
 void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length)
 {
-  // Intialize error handler to spare my sanity when the inevitable segfault occurs
   signal(SIGSEGV, handler);
-  // Split file into M pieces as detailed in paper.
   split(path, m);
+
   // Run the server as well as 7 workers. Server is the only thread that returns, so
   // no joining besides that thread is necessary. Source for POSIX threading library:
   // https://www.cs.cmu.edu/afs/cs/academic/class/15492-f07/www/pthreads.html
@@ -86,7 +86,7 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
 
   for (int i = 0; i < m; i++) {
     pthread_t worker;
-    // Trickery with structs as pthread_create only allows one argument to function for some reason.
+    // HACK Trickery with structs as pthread_create only allows one argument to function for some reason.
     struct args * pass_args = malloc(sizeof(struct args));
     pass_args->name = i;
     pass_args->map = map;

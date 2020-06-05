@@ -175,17 +175,17 @@ void* startWorker(void* arguments)
 
         // TODO Make this size dynamic/configurable. Also change to relative path. Also this maybe shouldn't be done worker-side.
 
-        char content[4096];
-        char line[1024];
+        char content[MAXCONTENT];
+        char line[MAXLINE];
         char path[100] = "./file_part";
         char* finalpath = strcat(path, args);
         FILE* fp = fopen(finalpath,"r");
         rewind(fp);
         fwrite("\n", sizeof(char), 2, fp);
-        printf("FP VAL for %s is %i\n", finalpath, fp);
+        /* printf("FP VAL for %s is %i\n", finalpath, fp); */
         while (fgets(line, MAXLINE, fp)) {
            /* fgets(line, MAXLINE, fp); */
-          printf("%s:%s\n",finalpath,line);
+          /* printf("%s:%s\n",finalpath,line); */
           strcat(content, line);
         }
         printf("final %s:%s\n",finalpath,content);
