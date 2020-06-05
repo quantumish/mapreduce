@@ -24,7 +24,6 @@ struct client
     int assigned;
   };
 
-void sliceString(char * str, char * buffer, size_t start, size_t end);
-void startServer(void* m);
+void start_server(void* m);
 
 #endif /* MODULE_H */

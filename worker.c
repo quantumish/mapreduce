@@ -128,12 +128,10 @@ static void retrieve_correct_portion(long piece, long total, char* sorted_path, 
 // This tutorial helped quite a bit in debugging what was going wrong with connection
 // https://www.geeksforgeeks.org/udp-server-client-implementation-c/
 
-void* startWorker(void* arguments)
+void* start_worker(void* arguments)
 {
   struct args *function_args = (struct args *)arguments;
   char* start = "Online.";
-  char s_name[10];
-  sprintf(s_name, "%d", function_args->name);
 
   // Same socket is needed on client end so initialize all over again.
   int s;
@@ -209,25 +207,24 @@ void* startWorker(void* arguments)
         int split_args[2];
         sscanf(args, "%i-%i", &split_args[0], &split_args[1]);
 
-        char agg_path[20] = "./aggregate";
-        strcat(agg_path, s_name);
+        char agg_path[20];
+        sprintf(agg_path, "./aggregate%d", function_args->name);
         char* path_base = "./intermediate";
         FILE* aggregate = fopen(agg_path, "w");
         aggregate_outputs(aggregate, path_base, split_args[0]);
 
-        char sort_base[20] = "./sorted";
-        strcat(sort_base, s_name);
-        int sort_len = sort_file(sort_base, agg_path, function_args->name);
+        char sort_path[20];
+        sprintf(sort_path, "./sorted%d", function_args->name);
+        int sort_len = sort_file(sort_path, agg_path, function_args->name);
 
         struct int_pair* in = malloc(sizeof(struct int_pair)*(sort_len+1));
-        retrieve_correct_portion(split_args[1], split_args[0], sort_base, &in, sort_len);
+        retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
         struct int_pair* out = malloc(sizeof(struct int_pair)*(sort_len+1));
         out = (*function_args->reduce)(in);
         
-        char out_path[20] = "./out";
-        char str_assigned[10];
-        sprintf(str_assigned, "%d", split_args[1]);
-        strcat(out_path, str_assigned);
+        char out_path[20];
+        sprintf(out_path, "./out%d", split_args[1]);
+
         int reduce_len = 0;
         for (int i = 0; out[i].key != NULL; i++) {
           reduce_len++;

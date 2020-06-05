@@ -68,7 +68,8 @@ void split(char* path, int num_splits) {
 }
 
 // Gateway function between user code and MapReduce. Starts up threads for workers and server.
-//
+// Takes char* path to input file, function pointer for map function, function pointer for reduce function, int M, and int length of keys
+// TODO Investigate necessity of length parameter.
 void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length)
 {
   signal(SIGSEGV, handler);
@@ -80,7 +81,7 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
 
   pthread_t server;
   int ret1;
-  ret1 = pthread_create(&server, NULL, startServer, (void *) m);
+  ret1 = pthread_create(&server, NULL, start_server, (void *) m);
   printf("MAINLIB | Created server thread.\n");
 
 
@@ -92,7 +93,7 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
     pass_args->map = map;
     pass_args->reduce = reduce;
     pass_args->length = length;
-    pthread_create(&worker, NULL, startWorker, (void *) pass_args);
+    pthread_create(&worker, NULL, start_worker, (void *) pass_args);
     printf("MAINLIB | Created worker thread #%i.\n", i);
 
   }
