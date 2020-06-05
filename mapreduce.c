@@ -64,14 +64,16 @@ void split(char* path, int num_splits) {
     fprintf(wptr,"%s\n", line);
     linecounter++;
   }
+  fclose(wptr);
   fclose(rptr);
   printf("MAINLIB | \x1B[0;32mSplitting complete.\x1B[0;37m \n");
 }
 
 // Gateway function between user code and MapReduce. Starts up threads for workers and server.
 // Takes char* path to input file, function pointer for map function, function pointer for reduce function, int M, and int length of keys
-// TODO Investigate necessity of length parameter.
-void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length)
+// as well as char* public ip
+// TODO Investigate necessity of length parameter and try to get rid of it.
+void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length, char* ip)
 {
   signal(SIGSEGV, handler);
   split(path, m);
@@ -79,6 +81,12 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
   // Run the server as well as 7 workers. Server is the only thread that returns, so
   // no joining besides that thread is necessary. Source for POSIX threading library:
   // https://www.cs.cmu.edu/afs/cs/academic/class/15492-f07/www/pthreads.html
+
+
+  int part1, part2, part3, part4;
+  part1=part2=part3=part4=0;
+  sscanf(ip, "%d.%d.%d.%d", &part1, &part2, &part3, &part4);
+  int ip_int = (part1 * pow(256, 3)) + (part2 * pow(256, 2)) + (part3 * 256) + (part4);
 
   pthread_t server;
   int ret1;
@@ -94,6 +102,7 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
     pass_args->map = map;
     pass_args->reduce = reduce;
     pass_args->length = length;
+    pass_args->ip = ip_int;
     pthread_create(&worker, NULL, start_worker, (void *) pass_args);
     printf("MAINLIB | Created worker thread #%i.\n", i);
 

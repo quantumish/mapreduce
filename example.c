@@ -63,7 +63,7 @@ struct int_pair * reduce(struct int_pair* intermediate_pairs)
   return filtered_pairs;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-  begin("./testing.txt", map, reduce, 8, 26);
+  begin(argv[1], map, reduce, 8, 26, argv[2]);
 }

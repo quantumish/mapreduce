@@ -40,6 +40,7 @@ struct args
 {
   int name;
   int length;
+  int ip;
   struct int_pair* (*map)(struct str_pair);
   struct int_pair* (*reduce)(struct int_pair*);
 };
