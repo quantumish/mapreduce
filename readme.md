@@ -1,3 +1,5 @@
+![Image of MapReduce Logs](pictures/mapreduce.png)
+
 # MapReduce
 
 ## Motivation/About
@@ -8,7 +10,7 @@ The `map` function takes a key value pair and produces a set of intermediate key
 
 The `reduce` function merges a set of key value pairs (with the same key) and returns a singular combined key value pair, i.e. list of <letter, count> to just one <letter, total>.
 
-The commmutative nature of these functions allows easy parallelization, as many `map` functions can take a subset of the document and combining their results will yield the same answer. Many `reduce` functions can be run on a subset of the total intermediate pairs and combining their results will also yield the same answer. This means that if the input file is split, the work of mapping and reducing can be assigned to many different processors at once, significantly decreeasing computing time.
+The commmutative nature of these functions allows easy parallelization, as many `map` functions can take a subset of the document and combining their results will yield the same answer. Many `reduce` functions can be run on a subset of the total intermediate pairs and combining their results will also yield the same answer. This means that if the input file is split, the work of mapping and reducing can be assigned to many different processors at once, significantly decreasing computing time.
 
 ## Examples/Testing
 
@@ -62,11 +64,11 @@ Note: Although similar, this does not describe the Google implementation's execu
 12. Program exits back into user code.
 
 ## Future Features
-[ ] Error handling and testing
-[ ] Cross-machine computation
-[ ] Refinements detailed in paper
-[ ] Fault tolerance
-[ ] Backup tasks
-[ ] Benchmarking
-[ ] Reporting via website
-[ ] Package manager support
+- [ ] Error handling and testing
+- [ ] Cross-machine computation
+- [ ] Refinements detailed in paper
+- [ ] Fault tolerance
+- [ ] Backup tasks
+- [ ] Benchmarking
+- [ ] Reporting via website
+- [ ] Package manager support
