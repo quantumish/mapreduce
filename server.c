@@ -3,19 +3,27 @@
 #define BUFSIZE 2048
 #define PORT 5000
 
+// Scans list of task statuses (i.e. mapped or reduced) and returns if anything is in progress
+// as well as next uncomlpeted task. Takes int* status list and int m, returns list of 2 values.
+/* int* find_remaining_and_prog(int* tracker, int m) { */
+/*   int results[2] = {-1, -1}; */
+/*   for (int i = 0; i < (int) m; i++) { */
+/*     if (tracker[i] == 0) { */
+/*       results[0] = i; */
+/*       break; */
+/*     } */
+/*     if (tracker[i] == 0 || tracker[i] == -1) { */
+/*       results[1] = 1; */
+/*     } */
+/*   } */
+/*   return results; */
+/* } */
+
+
 // Starts a UDP server which then listens for workers coming online, updates lookup table on
 // worker availability, and instructs workers on what to do. General reference for the UDP server:
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
-
-static void checkOn (char* buf, struct sockaddr_in remaddr, int* keys, struct client* values, int deviceCounter) {
-  if (strcmp(buf, "Online.")==0) {
-    keys[deviceCounter] = remaddr.sin_port;
-    values[deviceCounter].status = "Idle";
-    deviceCounter+=1;
-  }
-}
-
-void startServer(void* m)
+void start_server(void* m)
 {
   printf(" SERVER | \x1B[0;32mServer online.\x1B[0;37m\n");
   // Intialize socket with AF_INET IP family and SOCK_DGRAM datagram service, exit if failed
@@ -65,7 +73,11 @@ void startServer(void* m)
       buf[recvlen] = 0;
       printf(" SERVER | Received %d-byte message from %i: \"%s\"\n", recvlen, remaddr.sin_port, buf);
       // TODO Condense this somehow. Helper functions feels a little bizarree for this and each is different so not sure how to.
-      checkOn(buf, remaddr, keys, values, deviceCounter);
+      if (strcmp(buf, "Online.")==0) {
+        keys[deviceCounter] = remaddr.sin_port;
+        values[deviceCounter].status = "Idle";
+        deviceCounter+=1;
+      }
       if (strcmp(buf, "Starting.")==0) {
         for (int i = 0; i <= deviceCounter; i++) {
           if (keys[i] == remaddr.sin_port) {
@@ -86,6 +98,7 @@ void startServer(void* m)
       }
       if (phase == 0)
       {
+        // HACK Find a better way for checking in-ptogr
         int target = -1;
         int prog = -1;
         for (int j = 0; j < (int) m; j++) {
@@ -99,7 +112,6 @@ void startServer(void* m)
         }
         if (target != -1) {
           for (int i = 0; values[i].status != NULL; i++) {
-            /* printf("Read value as %s\n", values[i].status); */
             if (strcmp(values[i].status, "Idle")==0) {
               char* order = (char*)malloc(13*sizeof(char));
               remaddr.sin_port = keys[i];
