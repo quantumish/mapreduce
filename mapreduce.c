@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <execinfo.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "server.h"
 #include "worker.h"
