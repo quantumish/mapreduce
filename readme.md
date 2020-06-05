@@ -24,7 +24,9 @@ The only current example is a program to find the number of occurences of each l
 
 ### Usage
 *Note! As of now, number of workers must be a factor of linecount!*
-Run the executable with two arguments--in order they are the path of the file to be processed and your public IP, both strings.
+Run the executable with three arguments--in order they are the number of worker processes, path of the file to be processed, and your public IPs.
+
+To run MapReduce on a cluster (only supported in the `cluster-support` branch as of yet and largely unstable) run the program as normal on each device (in the future you will be able pass the optional '--noserver' argument to prevent multiple servers).
 
 ### Releases
 To simply run a built executable of the MapReduce demo, go to the Releases tab and download the release for your OS (Windows is as of yet not supported). Run the executable from the command line with `./example NUM-WORKERS PATH-TO-INPUT YOUR-PUBLIC-IP`.
