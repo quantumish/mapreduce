@@ -96,9 +96,6 @@ static void get_output_file_portion(FILE* fp, struct int_pair* pair_list, int m,
 
 static void retrieve_correct_portion(long piece, long total, char* sorted_path, struct int_pair** input, long length) {
   struct int_pair * pair_list = *input;
-  /* for (int i = 0; i < 1; i++) { */
-  /*   printf("%s %i\n", pair_list[i].key, pair_list[i].value); */
-  /* } */
   FILE* fptr = fopen(sorted_path, "r");
   char* prevline = malloc(MAXLINE * sizeof(char));
   char* line = malloc(MAXLINE * sizeof(char));
@@ -138,7 +135,7 @@ void* start_worker(void* arguments)
   struct sockaddr_in addr;
   memset((char *)&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET; // Specify address family.
-  addr.sin_addr.s_addr = htonl(1239883278); // INADDR_ANY just 0.0.0.0, machine IP address
+  addr.sin_addr.s_addr = htonl(function_args->ip); // INADDR_ANY just 0.0.0.0, machine IP address
   addr.sin_port = htons(PORT); // Specify port.
 
   // Connect to server
