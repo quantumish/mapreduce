@@ -17,12 +17,12 @@
 #include <string.h>
 #include <math.h>
 
-
 #define PORT 5000
 #define BUFSIZE 2048
 #define MAXLINE 1024
-#define MAXCONTENT 1000000
+#define MAXCONTENT 1000000 // HACK Make this dynamic in some way.
 
+// Key-value-pair-esque structures.
 struct str_pair
 {
   char* key;
@@ -35,6 +35,7 @@ struct int_pair
   int value;
 };
 
+// Structure for circumventing threading function issues.
 struct args
 {
   int name;
@@ -43,7 +44,7 @@ struct args
   struct int_pair* (*reduce)(struct int_pair*);
 };
 
-
+// All non-static functions.
 void aggregate_outputs(FILE* final, char* path_base, int max_name);
 int sort_file(char* finalpath, char* path, int name);
 void* startWorker(void* arguments);

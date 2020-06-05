@@ -17,6 +17,13 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 
+// Bundle client info.
+struct client
+  {
+    char* status;
+    int assigned;
+  };
+
 void sliceString(char * str, char * buffer, size_t start, size_t end);
 void startServer(void* m);
 

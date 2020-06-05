@@ -7,36 +7,41 @@
 // worker availability, and instructs workers on what to do. General reference for the UDP server:
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
 
+static void checkOn (char* buf, struct sockaddr_in remaddr, int* keys, struct client* values, int deviceCounter) {
+  if (strcmp(buf, "Online.")==0) {
+    keys[deviceCounter] = remaddr.sin_port;
+    values[deviceCounter].status = "Idle";
+    deviceCounter+=1;
+  }
+}
+
 void startServer(void* m)
 {
   printf(" SERVER | \x1B[0;32mServer online.\x1B[0;37m\n");
-  // Socket being created
-  int s;
   // Intialize socket with AF_INET IP family and SOCK_DGRAM datagram service, exit if failed
+  int s;
   if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
   {
     exit(1);
   }
+  
   // Establish sockaddr_in struct to pass into bind function
   struct sockaddr_in addr;
   memset((char *)&addr, 0, sizeof(addr));
-
   addr.sin_family = AF_INET; // Specify address family.
   addr.sin_addr.s_addr = htonl(INADDR_ANY); // INADDR_ANY just 0.0.0.0, machine IP address
   addr.sin_port = htons(PORT); // Specify port.
   if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
     exit(1);
   }
+
   // IP address of client
   struct sockaddr_in remaddr;
-  // Size of address
   socklen_t addrlen = sizeof(remaddr);
-  // Specify max bytes recieved/transferred
   int recvlen;
-  // Buffer to store recieved data
   unsigned char buf[BUFSIZE];
-  // List to track which files have been mapped. 0 = unmapped, 1 = mapped, -1 = in-progress.
 
+  // List to track which files have been mapped. 0 = unmapped, 1 = mapped, -1 = in-progress.
   int* mapped = malloc((int) m * sizeof(int));
   int* reduced = malloc((int) m * sizeof(int));
 
@@ -45,15 +50,13 @@ void startServer(void* m)
   {
     mapped[i] = 0;
   }
+
   // TODO Remove this
   int deviceCounter = 0;
   int phase = 0; // Prevent attempting to order mapping during reduce stage.
+
   // Define poor data structure for remembering states of clients. Define struct to allow storing of info about clients.
-  struct client
-  {
-    char* status;
-    int assigned;
-  };
+  // TODO Switch to hashmap instead of my bad version of Python dictionaries
   int keys[500];
   struct client values[500];
   while (1==1) {
@@ -61,12 +64,8 @@ void startServer(void* m)
     if (recvlen > 0) {
       buf[recvlen] = 0;
       printf(" SERVER | Received %d-byte message from %i: \"%s\"\n", recvlen, remaddr.sin_port, buf);
-      // TODO Switch to hashmap instead of my bad version of Python dictionaries
-      if (strcmp(buf, "Online.")==0) {
-        keys[deviceCounter] = remaddr.sin_port;
-        values[deviceCounter].status = "Idle";
-        deviceCounter+=1;
-      }
+      // TODO Condense this somehow. Helper functions feels a little bizarree for this and each is different so not sure how to.
+      checkOn(buf, remaddr, keys, values, deviceCounter);
       if (strcmp(buf, "Starting.")==0) {
         for (int i = 0; i <= deviceCounter; i++) {
           if (keys[i] == remaddr.sin_port) {
