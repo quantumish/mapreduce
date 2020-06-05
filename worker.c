@@ -174,13 +174,9 @@ void* start_worker(void* arguments)
         FILE* fp = fopen(finalpath,"r");
         rewind(fp);
         fwrite("\n", sizeof(char), 2, fp);
-        /* printf("FP VAL for %s is %i\n", finalpath, fp); */
         while (fgets(line, MAXLINE, fp)) {
-           /* fgets(line, MAXLINE, fp); */
-          /* printf("%s:%s\n",finalpath,line); */
           strcat(content, line);
         }
-        /* printf("final %s:%s\n",finalpath,content); */
         fclose(fp);
 
         struct str_pair file = {finalpath, content};
