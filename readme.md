@@ -1,4 +1,9 @@
-![Image of MapReduce Logs](pictures/mapreduce.png)
+<!-- <p align="center"> -->
+<!--   <img width="350" height="300" src="pictures/mapreduce.png"> -->
+<!--   <h1>MapReduce</h1> -->
+<!-- </p> -->
+
+<!-- ![Image of MapReduce Logs](pictures/mapreduce.png) -->
 
 # MapReduce
 
