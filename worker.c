@@ -121,13 +121,10 @@ static void retrieve_correct_portion(long piece, long total, char* sorted_path, 
   get_output_file_portion(fptr, pair_list, range[0], range[1]);
   pair_list[range[1]-range[0]].key = '\0';
   pair_list[range[1]-range[0]].value = -1;
-  /* for (int i = 0; i < (range[1])-range[0] + 1; i++) { */
-  /*   printf("%i %s %i\n", i, pair_list[i].key, pair_list[i].value); */
-  /* } */
 }
+
 // This tutorial helped quite a bit in debugging what was going wrong with connection
 // https://www.geeksforgeeks.org/udp-server-client-implementation-c/
-
 void* start_worker(void* arguments)
 {
   struct args *function_args = (struct args *)arguments;
@@ -141,7 +138,7 @@ void* start_worker(void* arguments)
   struct sockaddr_in addr;
   memset((char *)&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET; // Specify address family.
-  addr.sin_addr.s_addr = htonl(INADDR_ANY); // INADDR_ANY just 0.0.0.0, machine IP address
+  addr.sin_addr.s_addr = htonl(1239883278); // INADDR_ANY just 0.0.0.0, machine IP address
   addr.sin_port = htons(PORT); // Specify port.
 
   // Connect to server
@@ -186,7 +183,7 @@ void* start_worker(void* arguments)
           /* printf("%s:%s\n",finalpath,line); */
           strcat(content, line);
         }
-        printf("final %s:%s\n",finalpath,content);
+        /* printf("final %s:%s\n",finalpath,content); */
         fclose(fp);
 
         struct str_pair file = {finalpath, content};
@@ -207,30 +204,33 @@ void* start_worker(void* arguments)
         int split_args[2];
         sscanf(args, "%i-%i", &split_args[0], &split_args[1]);
 
+        // Aggregate intermediate data into one file
         char agg_path[20];
         sprintf(agg_path, "./aggregate%d", function_args->name);
         char* path_base = "./intermediate";
         FILE* aggregate = fopen(agg_path, "w");
         aggregate_outputs(aggregate, path_base, split_args[0]);
 
+        // Sort file to group keys
         char sort_path[20];
         sprintf(sort_path, "./sorted%d", function_args->name);
         int sort_len = sort_file(sort_path, agg_path, function_args->name);
 
+        // Run reduce on subsets of keys
         struct int_pair* in = malloc(sizeof(struct int_pair)*(sort_len+1));
         retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
         struct int_pair* out = malloc(sizeof(struct int_pair)*(sort_len+1));
         out = (*function_args->reduce)(in);
-        
+
+        // Write output to file
         char out_path[20];
         sprintf(out_path, "./out%d", split_args[1]);
-
         int reduce_len = 0;
         for (int i = 0; out[i].key != NULL; i++) {
           reduce_len++;
         }
-        
         set_output_file(out_path, out, reduce_len);
+        
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
     }

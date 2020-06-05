@@ -98,7 +98,7 @@ void start_server(void* m)
       }
       if (phase == 0)
       {
-        // HACK Find a better way for checking in-ptogr
+        // HACK Find a better way for checking in-progress tasks
         int target = -1;
         int prog = -1;
         for (int j = 0; j < (int) m; j++) {
