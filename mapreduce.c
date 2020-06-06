@@ -47,10 +47,8 @@ void split(char* path, int num_splits) {
   while (fgets(line, sizeof line, rptr) != NULL) {
     linecount++;
   }
-  printf("LINECOUNT: %i\n", linecount);
   rewind(rptr);
   // Based off of https://www.codingunit.com/c-tutorial-splitting-a-text-file-into-multiple-files
-  printf("MAINLIB | Split line at %d vs\n",  linecount / num_splits);
   while (fgets(line, sizeof line, rptr) != NULL) {
     if (linecounter == linecount /  num_splits) {
       fclose(wptr);
@@ -113,7 +111,7 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
   pthread_create(&server, NULL, start_server, (void *) udp_args);
   printf("MAINLIB | Created server thread.\n");
 
-  for (int i = 0; i < m; i++) {
+  for (int i = 0; i < (float) m / devices; i++) {
     pthread_t worker;
     // HACK Trickery with structs as pthread_create only allows one argument to function for some reason.
     struct worker_args * pass_args = malloc(sizeof(struct worker_args));

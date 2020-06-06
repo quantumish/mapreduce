@@ -64,7 +64,7 @@ void start_server(void* arguments)
         sendto(s, "Acknowledged.", strlen("Acknowledged")+1, 0, (struct sockaddr *)&remaddr, addrlen);
       }
       // Check if acceptable number of workers have connected. If not, skip orders and more. TODO Make cutoff configurable
-      if (deviceCounter / (function_args->devices * function_args->m) < 0.9 ) {
+      if ((float) deviceCounter / (function_args->m) < 0.9 ) {
         continue;
       }
       if (strcmp(buf, "Starting.")==0) {
