@@ -35,7 +35,7 @@ void start_server(void* arguments)
 
   // List to track which files have been mapped. 0 = unmapped, 1 = mapped, -1 = in-progress.
   int* mapped = malloc(function_args->m * sizeof(int));
-  int* reduced = malloc(function_args->m * sizeof(int));
+  int* reduced = malloc(function_args->reducers * sizeof(int));
 
   // Initialize mapped list to prevent bugs
   for (int i = 0; i < function_args->m; i++)
@@ -127,7 +127,7 @@ void start_server(void* arguments)
       else {
         int target = -1;
         int prog = -1;
-        for (int i = 0; i < function_args->m; i++) {
+        for (int i = 0; i < function_args->reducers; i++) {
           if (reduced[i] == 0) {
             target = i;
             break;
@@ -140,7 +140,7 @@ void start_server(void* arguments)
           for (int i = 0; values[i].status != NULL; i++) {
             if (strcmp(values[i].status, "Idle") == 0) {
               char *order = (char *)malloc(13 * sizeof(char));
-              sprintf(order, "Reduce %i-%i", function_args->m, target);
+              sprintf(order, "Reduce %i-%i-%i", function_args->reducers, target, function_args->m);
               remaddr.sin_port = keys[i];
               sendto(s, order, strlen(order)+1, 0, (struct sockaddr *)&remaddr, addrlen);
               values[i].status = "Waiting";

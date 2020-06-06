@@ -21,6 +21,7 @@
 struct server_args
 {
   int devices;
+  int reducers;
   int m;
 };
 

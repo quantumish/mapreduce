@@ -71,9 +71,12 @@ void split(char* path, int num_splits) {
 // Takes char* path to input file, function pointer for map function, function pointer for reduce function, int M, and int length of keys
 // as well as char* public ip
 // TODO Investigate necessity of length parameter and try to get rid of it.
-void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length, int devices)
+void mapreduce(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length, int devices, int reducers)
 {
   signal(SIGSEGV, handler);
+  if (reducers == -1) {
+    reducers = m;
+  }
   split(path, m);
 
   // Run the server as well as 7 workers. Server is the only thread that returns, so
@@ -108,9 +111,9 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
   struct server_args * udp_args = malloc(sizeof(struct server_args));
   udp_args->devices = devices;
   udp_args->m = m;
+  udp_args->reducers = reducers;
   pthread_create(&server, NULL, start_server, (void *) udp_args);
   printf("MAINLIB | Created server thread.\n");
-
   for (int i = 0; i < (float) m / devices; i++) {
     pthread_t worker;
     // HACK Trickery with structs as pthread_create only allows one argument to function for some reason.

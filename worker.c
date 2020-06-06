@@ -95,7 +95,7 @@ static void get_output_file_portion(FILE* fp, struct int_pair* pair_list, int m,
   }
 }
 
-static void retrieve_correct_portion(long piece, long total, char* sorted_path, struct int_pair** input, long length) {
+static void retrieve_correct_portion(float piece, float total, char* sorted_path, struct int_pair** input, float length) {
   struct int_pair * pair_list = *input;
   FILE* fptr = fopen(sorted_path, "r");
   char* prevline = malloc(MAXLINE * sizeof(char));
@@ -106,6 +106,7 @@ static void retrieve_correct_portion(long piece, long total, char* sorted_path, 
     char* key  = malloc(MAXLINE * sizeof(char));
     sscanf(line, "%s *s", key);
     strcpy(line, key);
+    printf("(%f * %f) / %f = %f\n", piece, length, total, (piece*length)/total);
     if ((i >= (piece*length)/total) && (i <= ((1+piece)*length)/total) && (strcmp(line, prevline)!=0)) {
       if (i < range[0]) range[0] = i;
       else if (i > range[1]) range[1] = i;
@@ -201,15 +202,15 @@ void* start_worker(void* arguments)
       else if (strcmp(direction, "Reduce") == 0) {
         printf("Worker%i | Starting reduce.\n", function_args->name);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
-        int split_args[2];
-        sscanf(args, "%i-%i", &split_args[0], &split_args[1]);
+        int split_args[3];
+        sscanf(args, "%i-%i-%i", &split_args[0], &split_args[1], &split_args[2]);
 
         // Aggregate intermediate data into one file
         char agg_path[20];
         sprintf(agg_path, "./aggregate%d", function_args->name);
         char* path_base = "./intermediate";
         FILE* aggregate = fopen(agg_path, "w");
-        aggregate_outputs(aggregate, path_base, split_args[0]);
+        aggregate_outputs(aggregate, path_base, split_args[2]);
 
         // Sort file to group keys
         char sort_path[20];
@@ -218,7 +219,9 @@ void* start_worker(void* arguments)
 
         // Run reduce on subsets of keys
         struct int_pair* in = malloc(sizeof(struct int_pair)*(sort_len+1));
+        printf("%i, %i\n", split_args[1], split_args[0]);
         retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
+        printf("still %i, %i\n", split_args[1], split_args[0]);
         struct int_pair* out = malloc(sizeof(struct int_pair)*(sort_len+1));
         out = (*function_args->reduce)(in);
 
