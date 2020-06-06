@@ -3,23 +3,6 @@
 #define BUFSIZE 2048
 #define PORT 5000
 
-// Scans list of task statuses (i.e. mapped or reduced) and returns if anything is in progress
-// as well as next uncomlpeted task. Takes int* status list and int m, returns list of 2 values.
-/* int* find_remaining_and_prog(int* tracker, int m) { */
-/*   int results[2] = {-1, -1}; */
-/*   for (int i = 0; i < (int) m; i++) { */
-/*     if (tracker[i] == 0) { */
-/*       results[0] = i; */
-/*       break; */
-/*     } */
-/*     if (tracker[i] == 0 || tracker[i] == -1) { */
-/*       results[1] = 1; */
-/*     } */
-/*   } */
-/*   return results; */
-/* } */
-
-
 // Starts a UDP server which then listens for workers coming online, updates lookup table on
 // worker availability, and instructs workers on what to do. General reference for the UDP server:
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
