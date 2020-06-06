@@ -73,7 +73,7 @@ void split(char* path, int num_splits) {
 // Takes char* path to input file, function pointer for map function, function pointer for reduce function, int M, and int length of keys
 // as well as char* public ip
 // TODO Investigate necessity of length parameter and try to get rid of it.
-void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length)
+void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length, int devices)
 {
   signal(SIGSEGV, handler);
   split(path, m);
@@ -107,16 +107,16 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
   int ip_int = (part1 * pow(256, 3)) + (part2 * pow(256, 2)) + (part3 * 256) + (part4);
 
   pthread_t server;
-  /* if (strcmp(comp_ip, ip) == 0) { */
-    int ret1;
-    ret1 = pthread_create(&server, NULL, start_server, (void *) m);
-    printf("MAINLIB | Created server thread.\n");
-  /* } */
+  struct server_args * udp_args = malloc(sizeof(struct server_args));
+  udp_args->devices = devices;
+  udp_args->m = m;
+  pthread_create(&server, NULL, start_server, (void *) udp_args);
+  printf("MAINLIB | Created server thread.\n");
 
   for (int i = 0; i < m; i++) {
     pthread_t worker;
     // HACK Trickery with structs as pthread_create only allows one argument to function for some reason.
-    struct args * pass_args = malloc(sizeof(struct args));
+    struct worker_args * pass_args = malloc(sizeof(struct worker_args));
     pass_args->name = i;
     pass_args->map = map;
     pass_args->reduce = reduce;

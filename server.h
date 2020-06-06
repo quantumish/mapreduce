@@ -17,13 +17,20 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 
+// pthreads aggravates me
+struct server_args
+{
+  int devices;
+  int m;
+};
+
 // Bundle client info.
 struct client
-  {
-    char* status;
-    int assigned;
-  };
+{
+  char* status;
+  int assigned;
+};
 
-void start_server(void* m);
+void start_server(void* arguments);
 
 #endif /* MODULE_H */

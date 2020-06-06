@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h>
 
 #include "worker.h"
 
@@ -124,7 +125,7 @@ static void retrieve_correct_portion(long piece, long total, char* sorted_path, 
 // https://www.geeksforgeeks.org/udp-server-client-implementation-c/
 void* start_worker(void* arguments)
 {
-  struct args *function_args = (struct args *)arguments;
+  struct worker_args *function_args = (struct worker_args *)arguments;
   char* start = "Online.";
 
   // Same socket is needed on client end so initialize all over again.
@@ -143,12 +144,18 @@ void* start_worker(void* arguments)
     printf("\n Error : Connect Failed \n");
   }
   // NOTE This can and will not work if flag argument set to 1
-  sendto(s, start, BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
-  printf("Worker%i | Informed server of existence.\n", function_args->name);
-  char buf[BUFSIZE];
   int recvlen;
   socklen_t len = sizeof(addr);
 
+  char confirmation[BUFSIZE];
+  while (strcmp(confirmation, "Acknowledged.") != 0) {
+    sendto(s, start, BUFSIZE, 0, (struct sockaddr *)NULL, sizeof(addr));
+    printf("Worker%i | Informing server of existence.\n", function_args->name);
+    char buf[BUFSIZE];
+    recvlen = recvfrom(s, confirmation, BUFSIZE, 0, (struct sockaddr *)&addr, &len);
+  }
+
+  char buf[BUFSIZE];
   while (1==1) {
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *) &addr, &len);
 

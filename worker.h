@@ -36,7 +36,7 @@ struct int_pair
 };
 
 // Structure for circumventing threading function issues.
-struct args
+struct worker_args
 {
   int name;
   int length;

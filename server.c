@@ -3,28 +3,12 @@
 #define BUFSIZE 2048
 #define PORT 5000
 
-// Scans list of task statuses (i.e. mapped or reduced) and returns if anything is in progress
-// as well as next uncomlpeted task. Takes int* status list and int m, returns list of 2 values.
-/* int* find_remaining_and_prog(int* tracker, int m) { */
-/*   int results[2] = {-1, -1}; */
-/*   for (int i = 0; i < (int) m; i++) { */
-/*     if (tracker[i] == 0) { */
-/*       results[0] = i; */
-/*       break; */
-/*     } */
-/*     if (tracker[i] == 0 || tracker[i] == -1) { */
-/*       results[1] = 1; */
-/*     } */
-/*   } */
-/*   return results; */
-/* } */
-
-
 // Starts a UDP server which then listens for workers coming online, updates lookup table on
 // worker availability, and instructs workers on what to do. General reference for the UDP server:
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
-void start_server(void* m)
+void start_server(void* arguments)
 {
+  struct server_args *function_args = (struct server_args *)arguments;
   printf(" SERVER | \x1B[0;32mServer online.\x1B[0;37m\n");
   // Intialize socket with AF_INET IP family and SOCK_DGRAM datagram service, exit if failed
   int s;
@@ -50,11 +34,11 @@ void start_server(void* m)
   unsigned char buf[BUFSIZE];
 
   // List to track which files have been mapped. 0 = unmapped, 1 = mapped, -1 = in-progress.
-  int* mapped = malloc((int) m * sizeof(int));
-  int* reduced = malloc((int) m * sizeof(int));
+  int* mapped = malloc(function_args->m * sizeof(int));
+  int* reduced = malloc(function_args->m * sizeof(int));
 
   // Initialize mapped list to prevent bugs
-  for (int i = 0; i < (int) m; i++)
+  for (int i = 0; i < function_args->m; i++)
   {
     mapped[i] = 0;
   }
@@ -77,6 +61,11 @@ void start_server(void* m)
         keys[deviceCounter] = remaddr.sin_port;
         values[deviceCounter].status = "Idle";
         deviceCounter+=1;
+        sendto(s, "Acknowledged.", strlen("Acknowledged")+1, 0, (struct sockaddr *)&remaddr, addrlen);
+      }
+      // Check if acceptable number of workers have connected. If not, skip orders and more. TODO Make cutoff configurable
+      if (deviceCounter / (function_args->devices * function_args->m) < 0.9 ) {
+        continue;
       }
       if (strcmp(buf, "Starting.")==0) {
         for (int i = 0; i <= deviceCounter; i++) {
@@ -99,11 +88,11 @@ void start_server(void* m)
       if (phase == 0)
       {
 
-        // HACK Find a better way for checking in-ptogr
+        // HACK Find a better way for checking in-progress
 
         int target = -1;
         int prog = -1;
-        for (int j = 0; j < (int) m; j++) {
+        for (int j = 0; j < function_args->m; j++) {
           if (mapped[j] == 0) {
             target = j;
             break;
@@ -138,7 +127,7 @@ void start_server(void* m)
       else {
         int target = -1;
         int prog = -1;
-        for (int i = 0; i < (int) m; i++) {
+        for (int i = 0; i < function_args->m; i++) {
           if (reduced[i] == 0) {
             target = i;
             break;
@@ -151,7 +140,7 @@ void start_server(void* m)
           for (int i = 0; values[i].status != NULL; i++) {
             if (strcmp(values[i].status, "Idle") == 0) {
               char *order = (char *)malloc(13 * sizeof(char));
-              sprintf(order, "Reduce %i-%i", (int) m, target);
+              sprintf(order, "Reduce %i-%i", function_args->m, target);
               remaddr.sin_port = keys[i];
               sendto(s, order, strlen(order)+1, 0, (struct sockaddr *)&remaddr, addrlen);
               values[i].status = "Waiting";
