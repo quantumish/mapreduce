@@ -10,6 +10,7 @@
 
 #include "worker.h"
 
+
 static void set_output_file(char* path, struct int_pair * pair_list, int length)
 {
   FILE * wptr;
@@ -77,7 +78,7 @@ int sort_file(char* finalpath, char* path, int name)
 }
 
 
-static void get_output_file_portion(FILE* fp, struct int_pair* pair_list, int m, int n)
+static void get_output_file_portion(FILE* fp, struct pair* pair_list, int m, int n)
 {
   char line[MAXLINE];
   int i = 0;
@@ -85,7 +86,7 @@ static void get_output_file_portion(FILE* fp, struct int_pair* pair_list, int m,
   rewind(fp);
   while (fgets(line, MAXLINE, fp) != NULL) {
     if ((i >= m) && (i < n)) {
-      struct int_pair *ret = malloc(sizeof(struct int_pair));
+      struct pair *ret = malloc(sizeof(struct pair));
       ret->key = malloc(sizeof(char) * MAXLINE);
       sscanf(line, "%s%d", ret->key, &(ret->value));
       pair_list[j] = *ret;
@@ -187,8 +188,8 @@ void* start_worker(void* arguments)
         }
         fclose(fp);
 
-        struct str_pair file = {finalpath, content};
-        struct int_pair * results = (struct int_pair *)malloc(sizeof(struct int_pair)*function_args->length);
+        struct pair file = {finalpath, content};
+        struct pair * results = (struct pair *)malloc(sizeof(struct pair)*function_args->length);
         results = (*function_args->map)(file);
 
         char wpath[100] = "./intermediate";
@@ -218,11 +219,11 @@ void* start_worker(void* arguments)
         int sort_len = sort_file(sort_path, agg_path, function_args->name);
 
         // Run reduce on subsets of keys
-        struct int_pair* in = malloc(sizeof(struct int_pair)*(sort_len+1));
+        struct pair* in = malloc(sizeof(struct pair)*(sort_len+1));
         printf("%i, %i\n", split_args[1], split_args[0]);
         retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
         printf("still %i, %i\n", split_args[1], split_args[0]);
-        struct int_pair* out = malloc(sizeof(struct int_pair)*(sort_len+1));
+        struct pair* out = malloc(sizeof(struct pair)*(sort_len+1));
         out = (*function_args->reduce)(in);
 
         // Write output to file

@@ -22,17 +22,11 @@
 #define MAXLINE 1024
 #define MAXCONTENT 1000000 // HACK Make this dynamic in some way.
 
-// Key-value-pair-esque structures.
-struct str_pair
+// Key-value pair
+struct pair
 {
-  char* key;
-  char* value;
-};
-
-struct int_pair
-{
-  char* key;
-  int value;
+  void* key;
+  void* value;
 };
 
 // Structure for circumventing threading function issues.
