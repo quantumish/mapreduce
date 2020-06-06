@@ -73,7 +73,7 @@ void split(char* path, int num_splits) {
 // Takes char* path to input file, function pointer for map function, function pointer for reduce function, int M, and int length of keys
 // as well as char* public ip
 // TODO Investigate necessity of length parameter and try to get rid of it.
-void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length, char* ip)
+void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length)
 {
   signal(SIGSEGV, handler);
   split(path, m);
@@ -86,7 +86,7 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
   path[1035];
   fp = popen("/usr/bin/dig +short myip.opendns.com @resolver1.opendns.com", "r");
   if (fp == NULL) {
-    printf("Failed to run dig\n" );
+    printf("Failed to determine IP with dig\n" );
     exit(1);
   }
   char comp_ip[15];
@@ -103,7 +103,7 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
 
   int part1, part2, part3, part4;
   part1=part2=part3=part4=0;
-  sscanf(ip, "%d.%d.%d.%d", &part1, &part2, &part3, &part4);
+  sscanf(comp_ip, "%d.%d.%d.%d", &part1, &part2, &part3, &part4);
   int ip_int = (part1 * pow(256, 3)) + (part2 * pow(256, 2)) + (part3 * 256) + (part4);
 
   pthread_t server;
@@ -124,13 +124,9 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
     pass_args->ip = ip_int;
     pthread_create(&worker, NULL, start_worker, (void *) pass_args);
     printf("MAINLIB | Created worker thread #%i.\n", i);
-    if (strcmp(comp_ip, ip) != 0) {
-      pthread_join(worker, NULL);
-    }
   }
-  if (strcmp(comp_ip, ip) == 0) {
-    pthread_join(server, NULL);
-  }
+
+  pthread_join(server, NULL);
 
   FILE* finalagg = fopen("./finalaggregate", "w");
   char agg_base[20] = "./out";
