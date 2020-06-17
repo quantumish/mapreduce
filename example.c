@@ -22,6 +22,7 @@ struct pair* map (struct pair input_pair)
       *(count) = *(count) + 1;
       tmp++;
     }
+    printf("IN MAP: %s %i\n", upper, *count);
     struct pair letter = {upper, count};
     output_pairs[i] = letter;
   }
@@ -53,7 +54,7 @@ struct pair * reduce(struct pair* intermediate_pairs)
   for (int i = 0; intermediate_pairs[i].key != NULL; i++) {
     char ascii[3];
     /* sprintf(ascii, "%d", *(char*)(intermediate_pairs[i].key)); */
-    printf("%i %i\n", (char*)(intermediate_pairs[i].key), (int*)intermediate_pairs[i].value);
+    printf("%s %i\n", (char*)(intermediate_pairs[i].key), *(int*)intermediate_pairs[i].value);
     /* output_pairs[strtol(ascii, NULL, 10) - 65].value += *(int*)intermediate_pairs[i].value; */
   }
   output_pairs[26].key = '\0';

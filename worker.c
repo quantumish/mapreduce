@@ -14,6 +14,7 @@ static void set_output_file(char* path, struct pair * pair_list, int length)
   FILE * wptr;
   wptr = fopen(path, "w");
   for (int i = 0; i < length; i++) {
+    /* printf("IN WRITE: %s %i\n", pair_list[i].key, pair_list[i].value); */
     fprintf(wptr, "%i %i\n", pair_list[i].key, pair_list[i].value);
   }
   fclose(wptr);
@@ -83,8 +84,14 @@ static void get_output_file_portion(FILE* fp, struct pair* pair_list, int m, int
   while (fgets(line, MAXLINE, fp) != NULL) {
     if ((i >= m) && (i < n)) {
       struct pair *ret = malloc(sizeof(struct pair));
-      ret->key = malloc(sizeof(char) * MAXLINE);
-      sscanf(line, "%d %d", ret->key, &(ret->value));
+      ret->key = malloc(sizeof(void*));
+      int addr1;
+      int addr2;
+      sscanf(line, "%i %i", &addr1, &addr2);
+      ret->key = (void*)addr1;
+      /* printf("%i vs %i\n", ret->key, &addr1); */
+      ret->value = (void*)addr2;
+      printf("IN PORTION: %i %i\n", ret->key, (ret->value));
       pair_list[j] = *ret;
       j++;
     }
@@ -187,6 +194,7 @@ void* start_worker(void* arguments)
         struct pair file = {finalpath, content};
         struct pair * results = (struct pair *)malloc(sizeof(struct pair)*function_args->length);
         results = (*function_args->map)(file);
+        printf("AFTER MAP: %i %i\n", results[1].key, results[1].value);
 
         char wpath[100] = "./intermediate";
         char t_name[10];
@@ -218,6 +226,7 @@ void* start_worker(void* arguments)
         // Run reduce on subsets of keys
         struct pair* in = malloc(sizeof(struct pair)*(sort_len+1));
         retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
+        printf("AFTER FILE: %i %i\n", in[1].key, in[1].value);
         struct pair* out = malloc(sizeof(struct pair)*(sort_len+1));
         out = (*function_args->reduce)(in);
 
