@@ -73,7 +73,7 @@ void split(char* path, int num_splits) {
 // Takes char* path to input file, function pointer for map function, function pointer for reduce function, int M, and int length of keys
 // as well as char* public ip
 // TODO Investigate necessity of length parameter and try to get rid of it.
-void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length, char* ip, int r)
+void begin(char* path, struct pair * (*map)(struct pair), struct pair * (*reduce)(struct pair *), int m, int length, char* ip, int r)
 {
   signal(SIGSEGV, handler);
   split(path, m);

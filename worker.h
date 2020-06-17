@@ -23,16 +23,10 @@
 #define MAXCONTENT 1000000 // HACK Make this dynamic in some way.
 
 // Key-value-pair-esque structures.
-struct str_pair
+struct pair
 {
-  char* key;
-  char* value;
-};
-
-struct int_pair
-{
-  char* key;
-  int value;
+  void* key;
+  void* value;
 };
 
 // Structure for circumventing threading function issues.
@@ -41,8 +35,8 @@ struct args
   int name;
   int length;
   int ip;
-  struct int_pair* (*map)(struct str_pair);
-  struct int_pair* (*reduce)(struct int_pair*);
+  struct pair* (*map)(struct pair);
+  struct pair* (*reduce)(struct pair*);
 };
 
 // All non-static functions.
