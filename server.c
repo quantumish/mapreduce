@@ -35,6 +35,9 @@ void start_server(void* m)
   // List to track which files have been mapped. 0 = unmapped, 1 = mapped, -1 = in-progress.
   int* mapped = malloc((int) m * sizeof(int));
   int* reduced = malloc((int) m * sizeof(int));
+  for (int i = 0; i < (int) m; i++) {
+    reduced[i] = 0;
+  }
 
   // Initialize mapped list to prevent bugs
   for (int i = 0; i < (int) m; i++)
@@ -82,7 +85,7 @@ void start_server(void* m)
       if (phase == 0)
       {
 
-        // HACK Find a better way for checking in-ptogr
+        // HACK Find a better way for checking in-progress
 
         int target = -1;
         int prog = -1;
@@ -121,7 +124,9 @@ void start_server(void* m)
       else {
         int target = -1;
         int prog = -1;
+        printf("Values are...");
         for (int i = 0; i < (int) m; i++) {
+          printf("%i\n", reduced[i]);
           if (reduced[i] == 0) {
             target = i;
             break;
@@ -130,6 +135,7 @@ void start_server(void* m)
             prog = 1;
           }
         }
+        printf("\n\n\n");
         if (target != -1) {
           for (int i = 0; values[i].status != NULL; i++) {
             if (strcmp(values[i].status, "Idle") == 0) {

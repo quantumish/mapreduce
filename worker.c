@@ -48,7 +48,7 @@ static int alphcmp(const void* ptr1, const void* ptr2)
   return (strcmp(*str1, *str2));
 }
 
-int sort_file(char* finalpath, char* path, int name)
+int sort_file(char* finalpath, char* path)
 {
   FILE* input = fopen(path, "r");
   int length = 0;
@@ -63,9 +63,6 @@ int sort_file(char* finalpath, char* path, int name)
     fgets(list[i], BUFSIZE, input);
   }
   qsort(list, length, sizeof (char*), alphcmp);
-  char s_name[10];
-  sprintf(s_name, "%d", name);
-  strcat(finalpath, s_name);
   FILE* sorted = fopen(finalpath, "w");
   for (int i = 0; i < length; i++) {
     fprintf(sorted, "%s", list[i]);
@@ -206,8 +203,9 @@ void* start_worker(void* arguments)
 
         // Sort file to group keys
         char sort_path[20];
-        sprintf(sort_path, "./sorted%d", function_args->name);
-        int sort_len = sort_file(sort_path, agg_path, function_args->name);
+        sprintf(sort_path, "./sorted%d", split_args[1]);
+        int sort_len = sort_file(sort_path, agg_path);
+        /* printf("Worker%i | Finished sort at %s.\n", function_args->name, sort_path); */
 
         // Run reduce on subsets of keys
         struct int_pair* in = malloc(sizeof(struct int_pair)*(sort_len+1));

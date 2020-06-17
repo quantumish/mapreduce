@@ -47,7 +47,7 @@ struct args
 
 // All non-static functions.
 void aggregate_outputs(FILE* final, char* path_base, int max_name);
-int sort_file(char* finalpath, char* path, int name);
+int sort_file(char* finalpath, char* path);
 void* start_worker(void* arguments);
 
 #endif /* MODULE_H */
