@@ -79,11 +79,13 @@ static void get_output_file_portion(FILE* fp, struct int_pair* pair_list, int m,
   int i = 0;
   int j = 0;
   rewind(fp);
+  printf("PORTION %d %d\n", m, n);
   while (fgets(line, MAXLINE, fp) != NULL) {
     if ((i >= m) && (i < n)) {
       struct int_pair *ret = malloc(sizeof(struct int_pair));
       ret->key = malloc(sizeof(char) * MAXLINE);
-      sscanf(line, "%s%d", ret->key, &(ret->value));
+      sscanf(line, "%s %d", ret->key, &(ret->value));
+      printf("%s %d\n", ret->key, ret->value);
       pair_list[j] = *ret;
       j++;
     }
@@ -102,9 +104,16 @@ static void retrieve_correct_portion(long piece, long total, char* sorted_path, 
     char* key  = malloc(MAXLINE * sizeof(char));
     sscanf(line, "%s *s", key);
     strcpy(line, key);
-    if ((i >= (piece*length)/total) && (i <= ((1+piece)*length)/total) && (strcmp(line, prevline)!=0)) {
-      if (i < range[0]) range[0] = i;
-      else if (i > range[1]) range[1] = i;
+    if ((i >= (piece*length)/total)  && (strcmp(line, prevline)!=0)) {
+      if (i <= ((1+piece)*length)/total) {
+        if (i < range[0]) range[0] = i;
+        else if (i > range[1]) range[1] = i;
+      }
+      else {
+        if (i < range[0]) range[0] = i;
+        else if (i > range[1]) range[1] = i;
+        break;
+      }
     }
     strcpy(prevline, line);
     i++;
@@ -141,7 +150,7 @@ void* start_worker(void* arguments)
   }
   // NOTE This can and will not work if flag argument set to 1
   sendto(s, start, BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
-  printf("Worker%i | Informed server of existence.\n", function_args->name);
+  printf("Worker%i │ Informed server of existence.\n", function_args->name);
   char buf[BUFSIZE];
   int recvlen;
   socklen_t len = sizeof(addr);
@@ -151,7 +160,7 @@ void* start_worker(void* arguments)
 
     if (recvlen > 0) {
       buf[recvlen] = 0;
-      printf("Worker%i | Received %d-byte message from server: \"%s\"\n", function_args->name, recvlen, buf);
+      printf("Worker%i │ Received %d-byte message from server: \"%s\"\n", function_args->name, recvlen, buf);
       if (strcmp(buf, "Ping")==0) {
         sendto(s, "Pong", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
@@ -159,7 +168,7 @@ void* start_worker(void* arguments)
       char args[BUFSIZE];
       sscanf(buf, "%s %s", direction, args);
       if (strcmp(direction, "Map")==0) {
-        printf("Worker%i | Starting map of %s.\n", function_args->name, args);
+        printf("Worker%i │ Starting map of %s.\n", function_args->name, args);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
 
         // TODO Make this size dynamic/configurable. Also change to relative path. Also this maybe shouldn't be done worker-side.
@@ -185,11 +194,11 @@ void* start_worker(void* arguments)
         sprintf(t_name, "%ld", strtol(args, NULL, 10));
         strcat(wpath, t_name);
         set_output_file(wpath, results, function_args->length);
-        printf("Worker%i | Finished writing to file.\n", function_args->name);
+        printf("Worker%i │ Finished writing to file.\n", function_args->name);
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
       else if (strcmp(direction, "Reduce") == 0) {
-        printf("Worker%i | Starting reduce.\n", function_args->name);
+        printf("Worker%i │ Starting reduce.\n", function_args->name);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
         int split_args[2];
         sscanf(args, "%i-%i", &split_args[0], &split_args[1]);

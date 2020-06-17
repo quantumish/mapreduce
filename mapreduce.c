@@ -30,11 +30,11 @@ void handler(int sig) {
 // Takes char* to path of file to be split and int of number of pieces to split into.
 // NOTE/TODO Could be causing bug, tweak me.
 void split(char* path, int num_splits) {
-  printf("MAINLIB | Beginning split of file into %i pieces.\n", num_splits);
+  printf("MAINLIB │ Beginning split of file into %i pieces.\n", num_splits);
   FILE *rptr;
   rptr = fopen(path, "r");
   if (rptr==NULL) {
-    printf("MAINLIB | Error! File could not be opened.");
+    printf("MAINLIB │ Error! File could not be opened.");
     exit(1);
   }
   char line[MAXLINE];
@@ -47,10 +47,10 @@ void split(char* path, int num_splits) {
   while (fgets(line, sizeof line, rptr) != NULL) {
     linecount++;
   }
-  printf("LINECOUNT: %i\n", linecount);
+  /* printf("LINECOUNT: %i\n", linecount); */
   rewind(rptr);
   // Based off of https://www.codingunit.com/c-tutorial-splitting-a-text-file-into-multiple-files
-  printf("MAINLIB | Split line at %d vs\n",  linecount / num_splits);
+  printf("MAINLIB │ Split line at %d vs\n",  linecount / num_splits);
   while (fgets(line, sizeof line, rptr) != NULL) {
     if (linecounter == linecount /  num_splits) {
       fclose(wptr);
@@ -66,7 +66,7 @@ void split(char* path, int num_splits) {
   }
   fclose(wptr);
   fclose(rptr);
-  printf("MAINLIB | \x1B[0;32mSplitting complete.\x1B[0;37m \n");
+  printf("MAINLIB │ \x1B[0;32mSplitting complete.\x1B[0;37m \n");
 }
 
 // Gateway function between user code and MapReduce. Starts up threads for workers and server.
@@ -91,7 +91,7 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
   pthread_t server;
   int ret1;
   ret1 = pthread_create(&server, NULL, start_server, (void *) m);
-  printf("MAINLIB | Created server thread.\n");
+  printf("MAINLIB │ Created server thread.\n");
 
 
   for (int i = 0; i < m; i++) {
@@ -104,7 +104,7 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
     pass_args->length = length;
     pass_args->ip = ip_int;
     pthread_create(&worker, NULL, start_worker, (void *) pass_args);
-    printf("MAINLIB | Created worker thread #%i.\n", i);
+    printf("MAINLIB │ Created worker thread #%i.\n", i);
 
   }
   pthread_join(server, NULL);
@@ -114,5 +114,5 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
   aggregate_outputs(finalagg, agg_base, (int)m);
   char final[20] = "./final";
   sort_file(final, "./finalaggregate");
-  printf("MAINLIB | \x1B[0;32mComplete!\x1B[0;37m \n");
+  printf("MAINLIB │ \x1B[0;32mComplete!\x1B[0;37m \n");
 }

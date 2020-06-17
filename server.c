@@ -8,7 +8,7 @@
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
 void start_server(void* m)
 {
-  printf(" SERVER | \x1B[0;32mServer online.\x1B[0;37m\n");
+  printf(" SERVER │ \x1B[0;32mServer online.\x1B[0;37m\n");
   // Intialize socket with AF_INET IP family and SOCK_DGRAM datagram service, exit if failed
   int s;
   if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
@@ -57,7 +57,7 @@ void start_server(void* m)
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
     if (recvlen > 0) {
       buf[recvlen] = 0;
-      printf(" SERVER | Received %d-byte message from %i: \"%s\"\n", recvlen, remaddr.sin_port, buf);
+      printf(" SERVER │ Received %d-byte message from %i: \"%s\"\n", recvlen, remaddr.sin_port, buf);
       // TODO Condense this somehow. Helper functions feels a little bizarree for this and each is different so not sure how to.
       if (strcmp(buf, "Online.")==0) {
         keys[deviceCounter] = remaddr.sin_port;
@@ -114,7 +114,7 @@ void start_server(void* m)
         }
         else {
           if (prog == -1) {
-            printf(" SERVER | \x1B[0;32mMapping complete.\x1B[0;37m \n");
+            printf(" SERVER │ \x1B[0;32mMapping complete.\x1B[0;37m \n");
             phase = 1;
             // HACK Prevent stall
             sendto(s, "Ping", 4, 0, (struct sockaddr *) &remaddr, addrlen);
@@ -124,9 +124,9 @@ void start_server(void* m)
       else {
         int target = -1;
         int prog = -1;
-        printf("Values are...");
+        /* printf("Values are..."); */
         for (int i = 0; i < (int) m; i++) {
-          printf("%i\n", reduced[i]);
+          /* printf("%i\n", reduced[i]); */
           if (reduced[i] == 0) {
             target = i;
             break;
@@ -135,7 +135,7 @@ void start_server(void* m)
             prog = 1;
           }
         }
-        printf("\n\n\n");
+        /* printf("\n\n\n"); */
         if (target != -1) {
           for (int i = 0; values[i].status != NULL; i++) {
             if (strcmp(values[i].status, "Idle") == 0) {
@@ -151,7 +151,7 @@ void start_server(void* m)
           }
         }
         else if (prog == -1) {
-          printf(" SERVER | \x1B[0;32mReducing complete.\x1B[0;37m \n");
+          printf(" SERVER │ \x1B[0;32mReducing complete.\x1B[0;37m \n");
           break;
         }
       }
