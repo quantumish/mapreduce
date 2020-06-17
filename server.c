@@ -6,8 +6,9 @@
 // Starts a UDP server which then listens for workers coming online, updates lookup table on
 // worker availability, and instructs workers on what to do. General reference for the UDP server:
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
-void start_server(void* m)
+void start_server(void* server_arguments)
 {
+  struct server_args* function_args = (struct server_args*) server_arguments;
   printf(" SERVER │ \x1B[0;32mServer online.\x1B[0;37m\n");
   // Intialize socket with AF_INET IP family and SOCK_DGRAM datagram service, exit if failed
   int s;
@@ -33,14 +34,14 @@ void start_server(void* m)
   unsigned char buf[BUFSIZE];
 
   // List to track which files have been mapped. 0 = unmapped, 1 = mapped, -1 = in-progress.
-  int* mapped = malloc((int) m * sizeof(int));
-  int* reduced = malloc((int) m * sizeof(int));
-  for (int i = 0; i < (int) m; i++) {
+  int* mapped = malloc(function_args->m * sizeof(int));
+  int* reduced = malloc(function_args->r * sizeof(int));
+  for (int i = 0; i < function_args->r; i++) {
     reduced[i] = 0;
   }
 
   // Initialize mapped list to prevent bugs
-  for (int i = 0; i < (int) m; i++)
+  for (int i = 0; i < function_args->m; i++)
   {
     mapped[i] = 0;
   }
@@ -89,7 +90,7 @@ void start_server(void* m)
 
         int target = -1;
         int prog = -1;
-        for (int j = 0; j < (int) m; j++) {
+        for (int j = 0; j < function_args->m; j++) {
           if (mapped[j] == 0) {
             target = j;
             break;
@@ -125,7 +126,7 @@ void start_server(void* m)
         int target = -1;
         int prog = -1;
         /* printf("Values are..."); */
-        for (int i = 0; i < (int) m; i++) {
+        for (int i = 0; i < function_args->r; i++) {
           /* printf("%i\n", reduced[i]); */
           if (reduced[i] == 0) {
             target = i;
@@ -140,7 +141,7 @@ void start_server(void* m)
           for (int i = 0; values[i].status != NULL; i++) {
             if (strcmp(values[i].status, "Idle") == 0) {
               char *order = (char *)malloc(13 * sizeof(char));
-              sprintf(order, "Reduce %i-%i", (int) m, target);
+              sprintf(order, "Reduce %i-%i-%i", function_args->r, target, function_args->m);
               remaddr.sin_port = keys[i];
               sendto(s, order, strlen(order)+1, 0, (struct sockaddr *)&remaddr, addrlen);
               values[i].status = "Waiting";

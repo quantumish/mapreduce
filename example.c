@@ -65,5 +65,5 @@ struct int_pair * reduce(struct int_pair* intermediate_pairs)
 
 int main(int argc, char** argv)
 {
-  begin(argv[2], map, reduce, strtol(argv[1], NULL, 10), 26, argv[3]);
+  begin(argv[2], map, reduce, strtol(argv[1], NULL, 10), 26, argv[3], strtol(argv[4], NULL, 10));
 }

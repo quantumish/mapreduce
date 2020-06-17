@@ -16,6 +16,6 @@ void split(char *path, int num_splits);
 
 // Starts MapReduce. Calls split function, starts server and worker processes,
 // then recieves output of server and returns it back to program.
-void begin(char* path, struct int_pair* (*map)(struct str_pair), struct int_pair* (*reduce)(struct int_pair *), int m, int length, char* ip);
+void begin(char* path, struct int_pair* (*map)(struct str_pair), struct int_pair* (*reduce)(struct int_pair *), int m, int length, char* ip, int r);
 
 #endif /* main.h */

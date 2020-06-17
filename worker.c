@@ -85,7 +85,6 @@ static void get_output_file_portion(FILE* fp, struct int_pair* pair_list, int m,
       struct int_pair *ret = malloc(sizeof(struct int_pair));
       ret->key = malloc(sizeof(char) * MAXLINE);
       sscanf(line, "%s %d", ret->key, &(ret->value));
-      printf("%s %d\n", ret->key, ret->value);
       pair_list[j] = *ret;
       j++;
     }
@@ -200,15 +199,15 @@ void* start_worker(void* arguments)
       else if (strcmp(direction, "Reduce") == 0) {
         printf("Worker%i │ Starting reduce.\n", function_args->name);
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
-        int split_args[2];
-        sscanf(args, "%i-%i", &split_args[0], &split_args[1]);
+        int split_args[3];
+        sscanf(args, "%i-%i-%i", &split_args[0], &split_args[1], &split_args[2]);
 
         // Aggregate intermediate data into one file
         char agg_path[20];
-        sprintf(agg_path, "./aggregate%d", function_args->name);
+        sprintf(agg_path, "./aggregate%d", split_args[0]);
         char* path_base = "./intermediate";
         FILE* aggregate = fopen(agg_path, "w");
-        aggregate_outputs(aggregate, path_base, split_args[0]);
+        aggregate_outputs(aggregate, path_base, split_args[2]);
 
         // Sort file to group keys
         char sort_path[20];

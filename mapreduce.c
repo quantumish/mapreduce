@@ -73,7 +73,7 @@ void split(char* path, int num_splits) {
 // Takes char* path to input file, function pointer for map function, function pointer for reduce function, int M, and int length of keys
 // as well as char* public ip
 // TODO Investigate necessity of length parameter and try to get rid of it.
-void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length, char* ip)
+void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pair * (*reduce)(struct int_pair *), int m, int length, char* ip, int r)
 {
   signal(SIGSEGV, handler);
   split(path, m);
@@ -90,7 +90,10 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
 
   pthread_t server;
   int ret1;
-  ret1 = pthread_create(&server, NULL, start_server, (void *) m);
+  struct server_args udp_args;
+  udp_args.m = m;
+  udp_args.r = r;
+  ret1 = pthread_create(&server, NULL, start_server, (void *) &udp_args);
   printf("MAINLIB │ Created server thread.\n");
 
 
@@ -111,7 +114,7 @@ void begin(char* path, struct int_pair * (*map)(struct str_pair), struct int_pai
 
   FILE* finalagg = fopen("./finalaggregate", "w");
   char agg_base[20] = "./out";
-  aggregate_outputs(finalagg, agg_base, (int)m);
+  aggregate_outputs(finalagg, agg_base, r);
   char final[20] = "./final";
   sort_file(final, "./finalaggregate");
   printf("MAINLIB │ \x1B[0;32mComplete!\x1B[0;37m \n");

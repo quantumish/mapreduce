@@ -19,11 +19,17 @@
 
 // Bundle client info.
 struct client
-  {
-    char* status;
-    int assigned;
-  };
+{
+  char* status;
+  int assigned;
+};
 
-void start_server(void* m);
+struct server_args
+{
+  int m;
+  int r;
+};
+
+void start_server(void* server_arguments);
 
 #endif /* MODULE_H */
