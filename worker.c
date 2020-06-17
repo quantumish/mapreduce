@@ -14,8 +14,7 @@ static void set_output_file(char* path, struct pair * pair_list, int length)
   FILE * wptr;
   wptr = fopen(path, "w");
   for (int i = 0; i < length; i++) {
-    /* printf("IN WRITE: %s %i\n", pair_list[i].key, pair_list[i].value); */
-    fprintf(wptr, "%i %i\n", pair_list[i].key, pair_list[i].value);
+    fprintf(wptr, "%p %p\n", pair_list[i].key, pair_list[i].value);
   }
   fclose(wptr);
 }
@@ -84,14 +83,14 @@ static void get_output_file_portion(FILE* fp, struct pair* pair_list, int m, int
   while (fgets(line, MAXLINE, fp) != NULL) {
     if ((i >= m) && (i < n)) {
       struct pair *ret = malloc(sizeof(struct pair));
-      ret->key = malloc(sizeof(void*));
-      int addr1;
-      int addr2;
-      sscanf(line, "%i %i", &addr1, &addr2);
-      ret->key = (void*)addr1;
+      /* ret->key = malloc(sizeof(void*)); */
+      void* addr1 = 0x0;
+      void* addr2 = 0x0;
+      sscanf(line, "%p %p", &addr1, &addr2);
+      ret->key = addr1;
       /* printf("%i vs %i\n", ret->key, &addr1); */
-      ret->value = (void*)addr2;
-      printf("IN PORTION: %i %i\n", ret->key, (ret->value));
+      ret->value = addr2;
+      printf("IN PORTION: %i %i\n", (char*)ret->key, (int*)(ret->value));
       pair_list[j] = *ret;
       j++;
     }
@@ -123,11 +122,13 @@ static void retrieve_correct_portion(long piece, long total, char* sorted_path, 
     }
     strcpy(prevline, line);
     i++;
+    free(key);
   }
   if ((i >= (piece*length)/total) && (i <= ((1+piece)*length)/total)) {
     if (i > range[1]) range[1] = i;
   }
   get_output_file_portion(fptr, pair_list, range[0], range[1]);
+  printf("AFTER PORTION?: %s %i\n", (char*)pair_list[1].key, *(int*)pair_list[1].value);
   pair_list[range[1]-range[0]].key = '\0';
   pair_list[range[1]-range[0]].value = -1;
 }
@@ -160,10 +161,13 @@ void* start_worker(void* arguments)
   char buf[BUFSIZE];
   int recvlen;
   socklen_t len = sizeof(addr);
-
+  int counter = 0;
+  struct pair * results = (struct pair *)malloc(sizeof(struct pair)*function_args->length);
   while (1==1) {
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *) &addr, &len);
-
+    if (counter > 1) {
+      printf("AFTER MAP 6: %s %i\n", (char*)results[1].key, *(int*)results[1].value);
+    }
     if (recvlen > 0) {
       buf[recvlen] = 0;
       printf("Worker%i │ Received %d-byte message from server: \"%s\"\n", function_args->name, recvlen, buf);
@@ -192,15 +196,16 @@ void* start_worker(void* arguments)
         fclose(fp);
 
         struct pair file = {finalpath, content};
-        struct pair * results = (struct pair *)malloc(sizeof(struct pair)*function_args->length);
         results = (*function_args->map)(file);
-        printf("AFTER MAP: %i %i\n", results[1].key, results[1].value);
+        printf("AFTER MAP 1: %s %i\n", (char*)results[1].key, *(int*)results[1].value);
+
 
         char wpath[100] = "./intermediate";
         char t_name[10];
         sprintf(t_name, "%ld", strtol(args, NULL, 10));
         strcat(wpath, t_name);
         set_output_file(wpath, results, function_args->length);
+        printf("AFTER MAP 2: %s %i\n", (char*)results[1].key, *(int*)results[1].value);
         printf("Worker%i │ Finished writing to file.\n", function_args->name);
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
@@ -221,12 +226,13 @@ void* start_worker(void* arguments)
         char sort_path[20];
         sprintf(sort_path, "./sorted%d", split_args[1]);
         int sort_len = sort_file(sort_path, agg_path);
+        printf("AFTER MAP 4: %s %i\n", (char*)results[1].key, *(int*)results[1].value);
         /* printf("Worker%i | Finished sort at %s.\n", function_args->name, sort_path); */
 
         // Run reduce on subsets of keys
         struct pair* in = malloc(sizeof(struct pair)*(sort_len+1));
         retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
-        printf("AFTER FILE: %i %i\n", in[1].key, in[1].value);
+        printf("AFTER FILE: %s %i\n", (char*)in[1].key, *(int*)in[1].value);
         struct pair* out = malloc(sizeof(struct pair)*(sort_len+1));
         out = (*function_args->reduce)(in);
 
@@ -241,6 +247,8 @@ void* start_worker(void* arguments)
         
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
+      printf("AFTER MAP 5: %s %i\n", (char*)results[1].key, *(int*)results[1].value);
+      counter++;
     }
   }
 }
