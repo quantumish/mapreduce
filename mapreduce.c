@@ -117,5 +117,6 @@ void begin(char* path, struct pair * (*map)(struct pair), struct pair * (*reduce
   aggregate_outputs(finalagg, agg_base, r);
   char final[20] = "./final";
   sort_file(final, "./finalaggregate");
+  translate(final);
   printf("MAINLIB │ \x1B[0;32mComplete!\x1B[0;37m \n");
 }

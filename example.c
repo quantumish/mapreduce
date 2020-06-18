@@ -53,9 +53,8 @@ struct pair * reduce(struct pair* intermediate_pairs)
   /* printf("CHECKPOINT\n"); */
   for (int i = 0; intermediate_pairs[i].key != NULL; i++) {
     char ascii[3];
-    /* sprintf(ascii, "%d", *(char*)(intermediate_pairs[i].key)); */
-    printf("%s %i\n", (char*)(intermediate_pairs[i].key), *(int*)intermediate_pairs[i].value);
-    /* output_pairs[strtol(ascii, NULL, 10) - 65].value += *(int*)intermediate_pairs[i].value; */
+    sprintf(ascii, "%d", *(char*)(intermediate_pairs[i].key));
+    output_pairs[strtol(ascii, NULL, 10) - 65].value += *(int*)intermediate_pairs[i].value;
   }
   output_pairs[26].key = '\0';
   int temp = -1;
@@ -63,15 +62,37 @@ struct pair * reduce(struct pair* intermediate_pairs)
   int j = 0;
   for (int i = 0; i < 27; i++) {
     if (output_pairs[i].value != 0) {
-      filtered_pairs[j].value = output_pairs[i].value;
-      filtered_pairs[j].key = output_pairs[i].key;
+      filtered_pairs[j].value = &output_pairs[i].value;
+      filtered_pairs[j].key = &output_pairs[i].key;
       j++;
     }
   }
   return filtered_pairs;
 }
 
+void translate(char* path)
+{
+  FILE* rptr = fopen(path, "r");
+  FILE* wptr = fopen("./translated", "r");
+  char* line = malloc(MAXLINE*sizeof(void*));
+  char* newline = malloc(MAXLINE*sizeof(char));
+  for (int i = 0; i < 26; i++) {
+    fgets(line, MAXLINE, rptr);
+    void* addr1 = 0x0;
+    void* addr2 = 0x0;
+    sscanf(line, "%p %p", &addr1, &addr2);
+    sprintf(newline, "%s %i", (char*)addr1, *(int*)addr2);
+    printf("LINE: %s\n", newline);
+    /* fwrite(newline, sizeof(char), MAXLINE*sizeof(char), wptr); */
+  }
+  free(newline);
+  free(line);
+  fclose(rptr);
+  fclose(wptr);
+}
+
 int main(int argc, char** argv)
 {
   begin(argv[2], map, reduce, strtol(argv[1], NULL, 10), 26, argv[3], strtol(argv[4], NULL, 10));
+  translate("./final");
 }
