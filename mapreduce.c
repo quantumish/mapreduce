@@ -41,8 +41,8 @@ void split(char* path, int num_splits) {
   char line[MAXLINE];
   int linecounter, filecounter, linecount;
   linecount=filecounter=linecounter=0;
-  char fileoutputname[15];
-  sprintf(fileoutputname, "./file_part%d", filecounter);
+  char fileoutputname[50];
+  sprintf(fileoutputname, "./program/file_part%d", filecounter);
   FILE *wptr;
   wptr = fopen(fileoutputname, "w");
   while (fgets(line, sizeof line, rptr) != NULL) {
@@ -57,7 +57,7 @@ void split(char* path, int num_splits) {
       fclose(wptr);
       linecounter = 0;
       filecounter++;
-      sprintf(fileoutputname, "./file_part%d", filecounter);
+      sprintf(fileoutputname, "./program/file_part%d", filecounter);
       wptr = fopen(fileoutputname, "w");
       if (!wptr)
         exit(1);

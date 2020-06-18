@@ -16,7 +16,7 @@ static void cleanup(int m, int r)
   // Free every pointer to an output of the map function
   for (int i = 0; i < m; i++) {
     char* partpath;
-    sprintf(partpath, "./intermediate%d", i);
+    sprintf(partpath, "./program/intermediate%d", i);
     FILE* filepart = fopen(partpath, "r");
     while (fgets(line, MAXLINE, filepart) != NULL) {
       void* addr1;
@@ -31,7 +31,7 @@ static void cleanup(int m, int r)
   // Free all the pointers to the reduce function's output
   for (int i = 0; i < r; i++) {
     char* outpath;
-    sprintf(outpath, "./out%d", i);
+    sprintf(outpath, "./program/out%d", i);
     FILE* out = fopen(outpath, "r");
     while (fgets(line, MAXLINE, out) != NULL) {
       void* addr1;
@@ -107,7 +107,6 @@ int sort_file(char* finalpath, char* path)
   fclose(input);
   return length;
 }
-
 
 static void get_output_file_portion(FILE* fp, struct pair* pair_list, int m, int n)
 {
@@ -194,7 +193,8 @@ void* start_worker(void* arguments)
   char buf[BUFSIZE];
   int recvlen;
   socklen_t len = sizeof(addr);
-  struct pair * results = (struct pair *)malloc(sizeof(struct pair)*function_args->length);
+  struct pair* results = (struct pair *)malloc(sizeof(struct pair)*function_args->length);
+  struct pair* out = malloc(sizeof(struct pair)*(function_args->length+1));
   while (1==1) {
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *) &addr, &len);
     if (recvlen > 0) {
@@ -214,7 +214,7 @@ void* start_worker(void* arguments)
 
         char content[MAXCONTENT];
         char line[MAXLINE];
-        char path[100] = "./file_part";
+        char path[100] = "./program/file_part";
         char* finalpath = strcat(path, args);
         FILE* fp = fopen(finalpath,"r");
         rewind(fp);
@@ -227,7 +227,7 @@ void* start_worker(void* arguments)
         struct pair file = {finalpath, content};
         results = (*function_args->map)(file);
 
-        char wpath[100] = "./intermediate";
+        char wpath[100] = "./program/intermediate";
         char t_name[10];
         sprintf(t_name, "%ld", strtol(args, NULL, 10));
         strcat(wpath, t_name);
@@ -242,42 +242,42 @@ void* start_worker(void* arguments)
         sscanf(args, "%i-%i-%i", &split_args[0], &split_args[1], &split_args[2]);
 
         // Aggregate intermediate data into one file
-        char agg_path[20];
-        sprintf(agg_path, "./aggregate%d", split_args[0]);
-        char* path_base = "./intermediate";
+        char agg_path[50];
+        sprintf(agg_path, "./program/aggregate%d", split_args[0]);
+        char* path_base = "./program/intermediate";
         FILE* aggregate = fopen(agg_path, "w");
         aggregate_outputs(aggregate, path_base, split_args[2]);
 
         // Sort file to group keys
-        char sort_path[20];
-        sprintf(sort_path, "./sorted%d", split_args[1]);
+        char sort_path[50];
+        sprintf(sort_path, "./program/sorted%d", split_args[1]);
         int sort_len = sort_file(sort_path, agg_path);
 
         // Run reduce on subsets of keys
         struct pair* in = malloc(sizeof(struct pair)*(sort_len+1));
         retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
-        struct pair* out = malloc(sizeof(struct pair)*(sort_len+1));
+        out = malloc(sizeof(struct pair)*(sort_len+1));
         out = (*function_args->reduce)(in);
 
         // Write output to file
-        char out_path[20];
-        sprintf(out_path, "./out%d", split_args[1]);
+        char out_path[50];
+        sprintf(out_path, "./program/out%d", split_args[1]);
         int reduce_len = 0;
         for (int i = 0; out[i].key != NULL; i++) {
           reduce_len++;
         }
         set_output_file(out_path, out, reduce_len);
-        
+
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
       else if (strcmp(direction, "Clean")==0) {
         int split_args[2];
         sscanf(args, "%i-%i", &split_args[0], &split_args[1]);
-        FILE* finalagg = fopen("./finalaggregate", "w");
-        char agg_base[20] = "./out";
+        FILE* finalagg = fopen("./program/finalaggregate", "w");
+        char agg_base[50] = "./program/out";
         aggregate_outputs(finalagg, agg_base, split_args[1]);
         fclose(finalagg);
-        (*function_args->translate)("./finalaggregate");
+        (*function_args->translate)("./program/finalaggregate");
         /* char final[20] = "./final"; */
         /* sort_file(final, "./finalaggregate"); */
         cleanup(split_args[0], split_args[1]);
