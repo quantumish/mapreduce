@@ -27,39 +27,6 @@ void handler(int sig)
   exit(1);
 }
 
-// Hastily attempt to reduce number of memory leaks using this function
-void cleanup(int m, int r)
-{
-  char* line = malloc(MAXLINE*sizeof(char));
-  // Free every pointer to an output of the map function
-  for (int i = 0; i < m; i++) {
-    char* partpath;
-    sprintf(partpath, "./intermediate%d", i);
-    FILE* filepart = fopen(partpath, "r");
-    while (fgets(line, MAXLINE, filepart) != NULL) {
-      void* addr1;
-      void* addr2;
-      sscanf(line, "%p %p", addr1, addr2);
-      free(addr1);
-      free(addr2);
-    }
-  }
-  // Free all the pointers to the reduce function's output
-  for (int i = 0; i < r; i++) {
-    char* outpath;
-    sprintf(outpath, "./out%d", i);
-    FILE* filepart = fopen(outpath, "r");
-    while (fgets(line, MAXLINE, filepart) != NULL) {
-      void* addr1;
-      void* addr2;
-      sscanf(line, "%p %p", addr1, addr2);
-      free(addr1);
-      free(addr2);
-    }
-  }
-  free(line);
-}
-
 // Very minimal split function that reads specified file and writes it into separate output files beginning with "file_part"
 // Takes char* to path of file to be split and int of number of pieces to split into.
 // NOTE/TODO Could be causing bug, tweak me.
@@ -107,7 +74,7 @@ void split(char* path, int num_splits) {
 // Takes char* path to input file, function pointer for map function, function pointer for reduce function, int M, and int length of keys
 // as well as char* public ip
 // TODO Investigate necessity of length parameter and try to get rid of it.
-void begin(char* path, struct pair * (*map)(struct pair), struct pair * (*reduce)(struct pair *), int m, int length, char* ip, int r)
+void begin(char* path, struct pair * (*map)(struct pair), struct pair * (*reduce)(struct pair *), void (*translate)(char*), int m, int length, char* ip, int r)
 {
   signal(SIGSEGV, handler);
   split(path, m);
@@ -138,6 +105,7 @@ void begin(char* path, struct pair * (*map)(struct pair), struct pair * (*reduce
     pass_args->name = i;
     pass_args->map = map;
     pass_args->reduce = reduce;
+    pass_args->translate = translate;
     pass_args->length = length;
     pass_args->ip = ip_int;
     pthread_create(&worker, NULL, start_worker, (void *) pass_args);

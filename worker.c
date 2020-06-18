@@ -9,6 +9,39 @@
 
 #include "worker.h"
 
+// Hastily attempt to reduce number of memory leaks using this function
+static void cleanup(int m, int r)
+{
+  char* line = malloc(MAXLINE*sizeof(char));
+  // Free every pointer to an output of the map function
+  for (int i = 0; i < m; i++) {
+    char* partpath;
+    sprintf(partpath, "./intermediate%d", i);
+    FILE* filepart = fopen(partpath, "r");
+    while (fgets(line, MAXLINE, filepart) != NULL) {
+      void* addr1;
+      void* addr2;
+      sscanf(line, "%p %p", addr1, addr2);
+      free(addr1);
+      free(addr2);
+    }
+  }
+  // Free all the pointers to the reduce function's output
+  for (int i = 0; i < r; i++) {
+    char* outpath;
+    sprintf(outpath, "./out%d", i);
+    FILE* filepart = fopen(outpath, "r");
+    while (fgets(line, MAXLINE, filepart) != NULL) {
+      void* addr1;
+      void* addr2;
+      sscanf(line, "%p %p", addr1, addr2);
+      free(addr1);
+      free(addr2);
+    }
+  }
+  free(line);
+}
+
 static void set_output_file(char* path, struct pair * pair_list, int length)
 {
   FILE * wptr;
@@ -18,7 +51,6 @@ static void set_output_file(char* path, struct pair * pair_list, int length)
   }
   fclose(wptr);
 }
-
 
 void aggregate_outputs(FILE* final, char* path_base, int max_name)
 {
@@ -167,7 +199,7 @@ void* start_worker(void* arguments)
       if (strcmp(buf, "Ping")==0) {
         sendto(s, "Pong", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
-      char direction[7]; // Direction is either Map or Reduce so longer than 7 (to compensate for \0) is not needed
+      char direction[10];
       char args[BUFSIZE];
       sscanf(buf, "%s %s", direction, args);
       if (strcmp(direction, "Map")==0) {
@@ -233,6 +265,18 @@ void* start_worker(void* arguments)
         set_output_file(out_path, out, reduce_len);
         
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
+      }
+      else if (strcmp(direction, "Clean")==0) {
+        int split_args[2];
+        sscanf(args, "%i-%i", &split_args[0], &split_args[1]);
+        FILE* finalagg = fopen("./finalaggregate", "w");
+        char agg_base[20] = "./out";
+        aggregate_outputs(finalagg, agg_base, split_args[1]);
+        char final[20] = "./final";
+        sort_file(final, "./finalaggregate");
+        (*function_args->translate)(final);
+        cleanup(split_args[0], split_args[1]);
+        /* printf("MAINLIB │ \x1B[0;32mTranslation complete.\x1B[0;37m \n"); */
       }
     }
   }

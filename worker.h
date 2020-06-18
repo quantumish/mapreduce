@@ -37,6 +37,7 @@ struct args
   int ip;
   struct pair* (*map)(struct pair);
   struct pair* (*reduce)(struct pair*);
+  void (*translate)(char*);
 };
 
 // All non-static functions.

@@ -89,7 +89,5 @@ void translate(char* path)
 
 int main(int argc, char** argv)
 {
-  begin(argv[2], map, reduce, strtol(argv[1], NULL, 10), 26, argv[3], strtol(argv[4], NULL, 10));
-  translate("./final");
-  /* cleanup(strtol(argv[1], NULL, 10), strtol(argv[4], NULL, 10)); */
+  begin(argv[2], map, reduce, translate, strtol(argv[1], NULL, 10), 26, argv[3], strtol(argv[4], NULL, 10));
 }

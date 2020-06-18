@@ -46,6 +46,8 @@ void start_server(void* server_arguments)
     mapped[i] = 0;
   }
 
+  int clean_status = 0;
+
   // TODO Remove this
   int deviceCounter = 0;
   int phase = 0; // Prevent attempting to order mapping during reduce stage.
@@ -78,6 +80,7 @@ void start_server(void* server_arguments)
             values[i].status = "Idle";
             if (phase == 0) mapped[values[i].assigned] = 1;
             if (phase == 1) reduced[values[i].assigned] = 1;
+            if (phase == 2) clean_status = 1;
             values[i].assigned = -1;
             break;
           }
@@ -122,7 +125,7 @@ void start_server(void* server_arguments)
           }
         }
       }
-      else {
+      else if (phase == 1) {
         int target = -1;
         int prog = -1;
         /* printf("Values are..."); */
@@ -153,9 +156,21 @@ void start_server(void* server_arguments)
         }
         else if (prog == -1) {
           printf(" SERVER │ \x1B[0;32mReducing complete.\x1B[0;37m \n");
-          break;
+          phase = 2;
+        }
+      }
+      if (phase == 2 && clean_status != 1) {
+        if (clean_status != -1) {
+          char *order = (char *)malloc(13 * sizeof(char));
+          sprintf(order, "Clean %i-%i", function_args->m, function_args->r);
+          remaddr.sin_port = keys[0];
+          sendto(s, order, strlen(order)+1, 0, (struct sockaddr *)&remaddr, addrlen);
+          values[0].status = "Waiting";
+          clean_status = -1;
         }
       }
     }
   }
+  free(mapped);
+  free(reduced);
 }

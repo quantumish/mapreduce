@@ -17,6 +17,6 @@ void cleanup(int m, int r);
 
 // Starts MapReduce. Calls split function, starts server and worker processes,
 // then recieves output of server and returns it back to program.
-void begin(char* path, struct pair* (*map)(struct pair), struct pair* (*reduce)(struct pair *), int m, int length, char* ip, int r);
+void begin(char* path, struct pair* (*map)(struct pair), struct pair* (*reduce)(struct pair *), void (*translate)(char*), int m, int length, char* ip, int r);
 
 #endif /* main.h */
