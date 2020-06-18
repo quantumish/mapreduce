@@ -22,7 +22,6 @@ struct pair* map (struct pair input_pair)
       *(count) = *(count) + 1;
       tmp++;
     }
-    printf("IN MAP: %s %i\n", upper, *count);
     struct pair letter = {upper, count};
     output_pairs[i] = letter;
   }
@@ -35,11 +34,6 @@ struct pair* map (struct pair input_pair)
 // similar type of terminated array.
 struct pair * reduce(struct pair* intermediate_pairs)
 {
-  /* struct pair * dereferenced_pairs = malloc(sizeof(struct pair)*27); */
-  /* for (int i = 0; intermediate_pairs[i].key != NULL; i++) { */
-  /*   dereferenced_pairs[i].key = *(char*)intermediate_pairs[i].key; */
-  /* } */
-
   struct pair * output_pairs = malloc(sizeof(struct pair)*27);
   struct pair * filtered_pairs = malloc(sizeof(struct pair)*27);
   for (int i = 0; i < 26; i++) {
@@ -51,8 +45,9 @@ struct pair * reduce(struct pair* intermediate_pairs)
   /* char ascii[3]; */
   /* sprintf(ascii, "%d", *(char*)(intermediate_pairs[0].key)); */
   /* printf("CHECKPOINT\n"); */
-  for (int i = 0; intermediate_pairs[i].key != NULL; i++) {
+  for (int i = 0; i < 26; i++) {
     char ascii[3];
+    /* printf("%s %d <-\n", (char*)(intermediate_pairs[i].key), *(int*)intermediate_pairs[i].value); */
     sprintf(ascii, "%d", *(char*)(intermediate_pairs[i].key));
     output_pairs[strtol(ascii, NULL, 10) - 65].value += *(int*)intermediate_pairs[i].value;
   }
@@ -64,6 +59,7 @@ struct pair * reduce(struct pair* intermediate_pairs)
     if (output_pairs[i].value != 0) {
       filtered_pairs[j].value = &output_pairs[i].value;
       filtered_pairs[j].key = &output_pairs[i].key;
+
       j++;
     }
   }
@@ -82,7 +78,7 @@ void translate(char* path)
     void* addr2 = 0x0;
     sscanf(line, "%p %p", &addr1, &addr2);
     sprintf(newline, "%s %i", (char*)addr1, *(int*)addr2);
-    printf("LINE: %s\n", newline);
+    /* printf("LINE: %s\n", newline); */
     /* fwrite(newline, sizeof(char), MAXLINE*sizeof(char), wptr); */
   }
   free(newline);
@@ -94,5 +90,5 @@ void translate(char* path)
 int main(int argc, char** argv)
 {
   begin(argv[2], map, reduce, strtol(argv[1], NULL, 10), 26, argv[3], strtol(argv[4], NULL, 10));
-  translate("./final");
+  /* translate("./final"); */
 }
