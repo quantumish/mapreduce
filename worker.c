@@ -21,23 +21,27 @@ static void cleanup(int m, int r)
     while (fgets(line, MAXLINE, filepart) != NULL) {
       void* addr1;
       void* addr2;
-      sscanf(line, "%p %p", addr1, addr2);
+      printf("LIN: %s\n", line);
+      sscanf(line, "%p %p", &addr1, &addr2);
       free(addr1);
       free(addr2);
     }
+    fclose(filepart);
   }
   // Free all the pointers to the reduce function's output
   for (int i = 0; i < r; i++) {
     char* outpath;
     sprintf(outpath, "./out%d", i);
-    FILE* filepart = fopen(outpath, "r");
-    while (fgets(line, MAXLINE, filepart) != NULL) {
+    FILE* out = fopen(outpath, "r");
+    while (fgets(line, MAXLINE, out) != NULL) {
       void* addr1;
       void* addr2;
-      sscanf(line, "%p %p", addr1, addr2);
+      printf("LIN2: %s\n", line);
+      sscanf(line, "%p %p", &addr1, &addr2);
       free(addr1);
       free(addr2);
     }
+    fclose(out);
   }
   free(line);
 }
@@ -272,9 +276,10 @@ void* start_worker(void* arguments)
         FILE* finalagg = fopen("./finalaggregate", "w");
         char agg_base[20] = "./out";
         aggregate_outputs(finalagg, agg_base, split_args[1]);
-        char final[20] = "./final";
-        sort_file(final, "./finalaggregate");
-        (*function_args->translate)(final);
+        fclose(finalagg);
+        (*function_args->translate)("./finalaggregate");
+        /* char final[20] = "./final"; */
+        /* sort_file(final, "./finalaggregate"); */
         cleanup(split_args[0], split_args[1]);
         /* printf("MAINLIB │ \x1B[0;32mTranslation complete.\x1B[0;37m \n"); */
       }

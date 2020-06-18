@@ -69,7 +69,7 @@ struct pair * reduce(struct pair* intermediate_pairs)
 void translate(char* path)
 {
   FILE* rptr = fopen(path, "r");
-  FILE* wptr = fopen("./translated", "r");
+  FILE* wptr = fopen("./translated", "w");
   char* line = malloc(MAXLINE*sizeof(void*));
   char* newline = malloc(MAXLINE*sizeof(char));
   for (int i = 0; i < 26; i++) {
@@ -77,9 +77,9 @@ void translate(char* path)
     void* addr1;
     void* addr2;
     sscanf(line, "%p %p", &addr1, &addr2);
-    printf("%s\n", line);
+    printf("%s %i\n", (char*)addr1, *(int*)addr2);
     sprintf(newline, "%s %i", (char*)addr1, *(int*)addr2);
-    fwrite(newline, sizeof(char), MAXLINE*sizeof(char), wptr);
+    fprintf(wptr, "%s %i",(char*)addr1, *(int*)addr2);
   }
   fclose(rptr);
   fclose(wptr);
