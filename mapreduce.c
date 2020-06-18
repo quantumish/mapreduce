@@ -17,13 +17,47 @@
 
 // Error handling based off of https://stackoverflow.com/questions/77005/how-to-automatically-generate-a-stacktrace-when-my-program-crashes
 // and some man pages. Simply dumps a minimal backtrace to allow me to spare sanity when trying to quickly debug (although lldb is preferable)
-void handler(int sig) {
+void handler(int sig)
+{
   void *array[10];
   size_t size;
   size = backtrace(array, 12);
   fprintf(stderr, "Error: signal %d:\n", sig);
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   exit(1);
+}
+
+// Hastily attempt to reduce number of memory leaks using this function
+void cleanup(int m, int r)
+{
+  char* line = malloc(MAXLINE*sizeof(char));
+  // Free every pointer to an output of the map function
+  for (int i = 0; i < m; i++) {
+    char* partpath;
+    sprintf(partpath, "./intermediate%d", i);
+    FILE* filepart = fopen(partpath, "r");
+    while (fgets(line, MAXLINE, filepart) != NULL) {
+      void* addr1;
+      void* addr2;
+      sscanf(line, "%p %p", addr1, addr2);
+      free(addr1);
+      free(addr2);
+    }
+  }
+  // Free all the pointers to the reduce function's output
+  for (int i = 0; i < r; i++) {
+    char* outpath;
+    sprintf(outpath, "./out%d", i);
+    FILE* filepart = fopen(outpath, "r");
+    while (fgets(line, MAXLINE, filepart) != NULL) {
+      void* addr1;
+      void* addr2;
+      sscanf(line, "%p %p", addr1, addr2);
+      free(addr1);
+      free(addr2);
+    }
+  }
+  free(line);
 }
 
 // Very minimal split function that reads specified file and writes it into separate output files beginning with "file_part"

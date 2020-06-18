@@ -74,21 +74,22 @@ void translate(char* path)
   char* newline = malloc(MAXLINE*sizeof(char));
   for (int i = 0; i < 26; i++) {
     fgets(line, MAXLINE, rptr);
-    void* addr1 = 0x0;
-    void* addr2 = 0x0;
+    void* addr1;
+    void* addr2;
     sscanf(line, "%p %p", &addr1, &addr2);
+    printf("%s\n", line);
     sprintf(newline, "%s %i", (char*)addr1, *(int*)addr2);
-    /* printf("LINE: %s\n", newline); */
-    /* fwrite(newline, sizeof(char), MAXLINE*sizeof(char), wptr); */
+    fwrite(newline, sizeof(char), MAXLINE*sizeof(char), wptr);
   }
-  free(newline);
-  free(line);
   fclose(rptr);
   fclose(wptr);
+  free(newline);
+  free(line);
 }
 
 int main(int argc, char** argv)
 {
   begin(argv[2], map, reduce, strtol(argv[1], NULL, 10), 26, argv[3], strtol(argv[4], NULL, 10));
-  /* translate("./final"); */
+  translate("./final");
+  /* cleanup(strtol(argv[1], NULL, 10), strtol(argv[4], NULL, 10)); */
 }
