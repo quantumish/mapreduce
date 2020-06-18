@@ -21,7 +21,6 @@ static void cleanup(int m, int r)
     while (fgets(line, MAXLINE, filepart) != NULL) {
       void* addr1;
       void* addr2;
-      printf("LIN: %s\n", line);
       sscanf(line, "%p %p", &addr1, &addr2);
       free(addr1);
       free(addr2);
@@ -36,7 +35,6 @@ static void cleanup(int m, int r)
     while (fgets(line, MAXLINE, out) != NULL) {
       void* addr1;
       void* addr2;
-      printf("LIN2: %s\n", line);
       sscanf(line, "%p %p", &addr1, &addr2);
       free(addr1);
       free(addr2);
@@ -282,6 +280,7 @@ void* start_worker(void* arguments)
         /* sort_file(final, "./finalaggregate"); */
         cleanup(split_args[0], split_args[1]);
         /* printf("MAINLIB │ \x1B[0;32mTranslation complete.\x1B[0;37m \n"); */
+        sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
     }
   }

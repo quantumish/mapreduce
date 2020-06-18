@@ -169,6 +169,7 @@ void start_server(void* server_arguments)
           clean_status = -1;
         }
       }
+      else if (phase == 2 && clean_status == 1) break;
     }
   }
   free(mapped);

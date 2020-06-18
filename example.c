@@ -52,27 +52,23 @@ struct pair * reduce(struct pair* intermediate_pairs)
   for (int i = 0; output_pairs[i].key != 0x0 ; i++) {
     char* ascii = malloc(3*sizeof(char));
     char* ascii_num = malloc(3*sizeof(char));
-    printf("%s %d <-\n", (char*)(intermediate_pairs[i].key), *(int*)intermediate_pairs[i].value);
     sprintf(ascii, "%s", (char*)(intermediate_pairs[i].key));
     sprintf(ascii_num, "%d", *ascii);
     output_pairs[strtol(ascii_num, NULL, 10) - 65].key = ascii;
-    printf("%s = %ld\n", ascii, strtol(ascii_num, NULL, 10) - 65);
     int* newval = malloc(sizeof(int));
     *newval = *(int*)intermediate_pairs[i].value + *(int*)output_pairs[strtol(ascii_num, NULL, 10) - 65].value;
     output_pairs[strtol(ascii_num, NULL, 10) - 65].value = newval;
   }
-  printf("%s %d <---- <----\n", (char*)(output_pairs[3].key), *(int*)output_pairs[3].value);
   output_pairs[26].key = 0x0;
   output_pairs[26].value = 0x0;
-  int j = 0;
-  for (int i = 0; i < 27; i++) {
-    if (*(int*)output_pairs[i].value != 0) {
-      filtered_pairs[j].value = &output_pairs[i].value;
-      filtered_pairs[j].key = &output_pairs[i].key;
-
-      j++;
-    }
+  int i = 0;
+  while (output_pairs[i].value != 0x0) {
+    filtered_pairs[i].value = output_pairs[i].value;
+    filtered_pairs[i].key = output_pairs[i].key;
+    i++;
   }
+  filtered_pairs[26].key = 0x0;
+  filtered_pairs[26].value = 0x0;
   return filtered_pairs;
 }
 
@@ -87,9 +83,8 @@ void translate(char* path)
     void* addr1;
     void* addr2;
     sscanf(line, "%p %p", &addr1, &addr2);
-    printf("%s %d\n", (char*)addr1, *(int*)addr2);
     sprintf(newline, "%s %i", (char*)addr1, *(int*)addr2);
-    fprintf(wptr, "%s %i",(char*)addr1, *(int*)addr2);
+    fprintf(wptr, "%s %i\n",(char*)addr1, *(int*)addr2);
   }
   fclose(rptr);
   fclose(wptr);

@@ -113,11 +113,5 @@ void begin(char* path, struct pair * (*map)(struct pair), struct pair * (*reduce
 
   }
   pthread_join(server, NULL);
-
-  FILE* finalagg = fopen("./finalaggregate", "w");
-  char agg_base[20] = "./out";
-  aggregate_outputs(finalagg, agg_base, r);
-  char final[20] = "./final";
-  sort_file(final, "./finalaggregate");
   printf("MAINLIB │ \x1B[0;32mComplete!\x1B[0;37m \n");
 }
