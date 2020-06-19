@@ -15,7 +15,7 @@ static void cleanup(int m, int r)
   char* line = malloc(MAXLINE*sizeof(char));
   // Free every pointer to an output of the map function
   for (int i = 0; i < m; i++) {
-    char* partpath;
+    char* partpath = malloc(50*sizeof(char));
     sprintf(partpath, "./program/intermediate%d", i);
     FILE* filepart = fopen(partpath, "r");
     while (fgets(line, MAXLINE, filepart) != NULL) {
@@ -26,10 +26,11 @@ static void cleanup(int m, int r)
       free(addr2);
     }
     fclose(filepart);
+    free(partpath);
   }
   // Free all the pointers to the reduce function's output
   for (int i = 0; i < r; i++) {
-    char* outpath;
+    char* outpath = malloc(50*sizeof(char));;
     sprintf(outpath, "./program/out%d", i);
     FILE* out = fopen(outpath, "r");
     while (fgets(line, MAXLINE, out) != NULL) {
@@ -40,6 +41,7 @@ static void cleanup(int m, int r)
       free(addr2);
     }
     fclose(out);
+    free(outpath);
   }
   free(line);
 }
@@ -201,7 +203,7 @@ void* start_worker(void* arguments)
       if (strcmp(buf, "Ping")==0) {
         sendto(s, "Pong", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
-      char direction[10];
+      char direction[BUFSIZE];
       char args[BUFSIZE];
       sscanf(buf, "%s %s", direction, args);
       if (strcmp(direction, "Map")==0) {
@@ -271,6 +273,7 @@ void* start_worker(void* arguments)
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
       else if (strcmp(direction, "Clean")==0) {
+        printf("%s and %s", direction, args);
         int split_args[2];
         sscanf(args, "%i-%i", &split_args[0], &split_args[1]);
         FILE* finalagg = fopen("./program/finalaggregate", "w");
