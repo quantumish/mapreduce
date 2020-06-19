@@ -255,6 +255,8 @@ void* start_worker(void* arguments)
         struct pair* in = malloc(sizeof(struct pair)*(sort_len+1));
         retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
         out = malloc(sizeof(struct pair)*(sort_len+1));
+        in[sort_len].key = 0x0;
+        in[sort_len].value = 0x0;
         out = (*function_args->reduce)(in);
 
         // Write output to file

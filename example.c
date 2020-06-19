@@ -49,7 +49,7 @@ struct pair * reduce(struct pair* intermediate_pairs)
   /* char ascii[3]; */
   /* sprintf(ascii, "%d", *(char*)(intermediate_pairs[0].key)); */
   /* printf("CHECKPOINT\n"); */
-  for (int i = 0; output_pairs[i].key != 0x0 ; i++) {
+  for (int i = 0; intermediate_pairs[i].key != 0x0 ; i++) {
     char* ascii = malloc(3*sizeof(char));
     char* ascii_num = malloc(3*sizeof(char));
     sprintf(ascii, "%s", (char*)(intermediate_pairs[i].key));
