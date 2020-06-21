@@ -25,8 +25,6 @@ struct pair* map (struct pair input_pair)
     struct pair letter = {upper, count};
     output_pairs[i] = letter;
   }
-  output_pairs[26].key = 0x0;
-  output_pairs[26].value = 0x0;
   return output_pairs;
 }
 
@@ -67,8 +65,6 @@ struct pair * reduce(struct pair* intermediate_pairs)
     filtered_pairs[i].key = output_pairs[i].key;
     i++;
   }
-  filtered_pairs[26].key = 0x0;
-  filtered_pairs[26].value = 0x0;
   return filtered_pairs;
 }
 

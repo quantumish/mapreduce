@@ -51,7 +51,6 @@ void split(char* path, int num_splits) {
   /* printf("LINECOUNT: %i\n", linecount); */
   rewind(rptr);
   // Based off of https://www.codingunit.com/c-tutorial-splitting-a-text-file-into-multiple-files
-  printf("MAINLIB │ Split line at %d vs\n",  linecount / num_splits);
   while (fgets(line, sizeof line, rptr) != NULL) {
     if (linecounter == linecount /  num_splits) {
       fclose(wptr);

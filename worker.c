@@ -121,6 +121,7 @@ static void get_output_file_portion(FILE* fp, struct pair* pair_list, int m, int
       void* addr1 = 0x0;
       void* addr2 = 0x0;
       sscanf(line, "%p %p", &addr1, &addr2);
+      //printf("%p, %p are read values\n", addr1, addr2);
       ret->key = addr1;
       /* printf("%i vs %i\n", ret->key, &addr1); */
       ret->value = addr2;
@@ -160,6 +161,7 @@ static void retrieve_correct_portion(long piece, long total, char* sorted_path, 
   if ((i >= (piece*length)/total) && (i <= ((1+piece)*length)/total)) {
     if (i > range[1]) range[1] = i;
   }
+  //printf("PORTION IS %i to %i\n", range[0],  range[1]);
   get_output_file_portion(fptr, pair_list, range[0], range[1]);
   pair_list[range[1]-range[0]].key = '\0';
   pair_list[range[1]-range[0]].value = -1;
@@ -255,17 +257,18 @@ void* start_worker(void* arguments)
 
         // Run reduce on subsets of keys
         struct pair* in = malloc(sizeof(struct pair)*(sort_len+1));
-        retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
-        out = malloc(sizeof(struct pair)*(sort_len+1));
         in[sort_len].key = 0x0;
         in[sort_len].value = 0x0;
+        retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
+        out = malloc(sizeof(struct pair)*(sort_len+1));
         out = (*function_args->reduce)(in);
-
+        out[sort_len].key = 0x0;
+        out[sort_len].value = 0x0;
         // Write output to file
         char out_path[50];
         sprintf(out_path, "./program/out%d", split_args[1]);
         int reduce_len = 0;
-        for (int i = 0; out[i].key != NULL; i++) {
+        for (int i = 0; out[i].key != 0x0; i++) {
           reduce_len++;
         }
         set_output_file(out_path, out, reduce_len);
@@ -273,7 +276,6 @@ void* start_worker(void* arguments)
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
       else if (strcmp(direction, "Clean")==0) {
-        printf("%s and %s", direction, args);
         int split_args[2];
         sscanf(args, "%i-%i", &split_args[0], &split_args[1]);
         FILE* finalagg = fopen("./program/finalaggregate", "w");
@@ -283,7 +285,7 @@ void* start_worker(void* arguments)
         (*function_args->translate)("./program/finalaggregate");
         /* char final[20] = "./final"; */
         /* sort_file(final, "./finalaggregate"); */
-        cleanup(split_args[0], split_args[1]);
+        // cleanup(split_args[0], split_args[1]);
         /* printf("MAINLIB │ \x1B[0;32mTranslation complete.\x1B[0;37m \n"); */
         sendto(s, "Done.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
       }
