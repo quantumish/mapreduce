@@ -7,8 +7,9 @@
 #ifndef MAPREDUCE_H
 #define MAPREDUCE_H
 
-#include "server.h"
-#include "worker.h"
+#include "server.hpp"
+#include "worker.hpp"
+#include <functional>
 
 #define MAXLINE 1024
 
@@ -17,6 +18,6 @@ void cleanup(int m, int r);
 
 // Starts MapReduce. Calls split function, starts server and worker processes,
 // then recieves output of server and returns it back to program.
-void begin(char* path, struct pair* (*map)(struct pair), struct pair* (*reduce)(struct pair *), void (*translate)(char*), int m, int length, char* ip, int r);
+void begin(char* path, std::function<struct pair*(struct pair)> map, std::function<struct pair*(struct pair*)> reduce, std::function<void(char*)>, int m, int length, char* ip, int r);
 
 #endif /* main.h */

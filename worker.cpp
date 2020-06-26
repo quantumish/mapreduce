@@ -7,7 +7,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "worker.h"
+#include "worker.hpp"
 
 // Hastily attempt to reduce number of memory leaks using this function
 static void cleanup(int m, int r)
@@ -227,7 +227,7 @@ void* start_worker(void* arguments)
         fclose(fp);
 
         struct pair file = {finalpath, content};
-        results = (*function_args->map)(file);
+        results = (function_args->map)(file);
 
         char wpath[100] = "./program/intermediate";
         char t_name[10];
@@ -261,7 +261,7 @@ void* start_worker(void* arguments)
         in[sort_len].value = 0x0;
         retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
         out = (struct pair*)malloc(sizeof(struct pair)*(sort_len+1));
-        out = (*function_args->reduce)(in);
+        out = (function_args->reduce)(in);
         out[sort_len].key = 0x0;
         out[sort_len].value = 0x0;
         // Write output to file
@@ -282,7 +282,7 @@ void* start_worker(void* arguments)
         char agg_base[50] = "./program/out";
         aggregate_outputs(finalagg, agg_base, split_args[1]);
         fclose(finalagg);
-        (*function_args->translate)("./program/finalaggregate");
+        (function_args->translate)("./program/finalaggregate");
         /* char final[20] = "./final"; */
         /* sort_file(final, "./finalaggregate"); */
         // cleanup(split_args[0], split_args[1]);

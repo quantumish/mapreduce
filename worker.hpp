@@ -16,6 +16,7 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <math.h>
+#include <functional>
 
 #define PORT 5000
 #define BUFSIZE 2048
@@ -35,9 +36,9 @@ struct args
   int name;
   int length;
   int ip;
-  struct pair* (*map)(struct pair);
-  struct pair* (*reduce)(struct pair*);
-  void (*translate)(char*);
+  std::function<struct pair*(struct pair)> map;
+  std::function<struct pair*(struct pair*)> reduce;
+  std::function<void(char*)> translate;
 };
 
 // All non-static functions.
