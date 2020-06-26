@@ -6,7 +6,7 @@
 // Starts a UDP server which then listens for workers coming online, updates lookup table on
 // worker availability, and instructs workers on what to do. General reference for the UDP server:
 // https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
-void start_server(void* server_arguments)
+void* start_server(void* server_arguments)
 {
   struct server_args* function_args = (struct server_args*) server_arguments;
   printf(" SERVER │ \x1B[0;32mServer online.\x1B[0;37m\n");
@@ -26,16 +26,21 @@ void start_server(void* server_arguments)
   if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
     exit(1);
   }
+  printf("init'd socket successfully\n");
 
   // IP address of client
   struct sockaddr_in remaddr;
   socklen_t addrlen = sizeof(remaddr);
   int recvlen;
   char buf[BUFSIZE];
+  printf("init'd client info successfully\n");
 
   // List to track which files have been mapped. 0 = unmapped, 1 = mapped, -1 = in-progress.
+  printf("0x%x \n", function_args);
   int* mapped = (int*)malloc(function_args->m * sizeof(int));
+  printf("malloc'd m list successfully\n");
   int* reduced = (int*)malloc(function_args->r * sizeof(int));
+  printf("malloc'd e list successfully\n");
   for (int i = 0; i < function_args->r; i++) {
     reduced[i] = 0;
   }
@@ -45,19 +50,23 @@ void start_server(void* server_arguments)
   {
     mapped[i] = 0;
   }
+  printf("init'd lists successfully\n");
 
   int clean_status = 0;
 
   // TODO Remove this
   int deviceCounter = 0;
   int phase = 0; // Prevent attempting to order mapping during reduce stage.
-
+  
   // Define poor data structure for remembering states of clients. Define struct to allow storing of info about clients.
   // TODO Switch to hashmap instead of my bad version of Python dictionaries
   int keys[500];
   struct client values[500];
+  printf("init'd successfully");
   while (1==1) {
+    printf("ping.\n");
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
+    printf("I have recieved something.\n");
     if (recvlen > 0) {
       buf[recvlen] = 0;
       printf(" SERVER │ Received %d-byte message from %i: \"%s\"\n", recvlen, remaddr.sin_port, buf);
@@ -174,4 +183,6 @@ void start_server(void* server_arguments)
   }
   free(mapped);
   free(reduced);
+  //  pthread_exit(NULL);
+  return 0x0;
 }

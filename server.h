@@ -30,6 +30,6 @@ struct server_args
   int r;
 };
 
-void start_server(void* server_arguments);
+void* start_server(void* server_arguments);
 
 #endif /* MODULE_H */
