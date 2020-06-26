@@ -90,10 +90,10 @@ void begin(char* path, struct pair * (*map)(struct pair), struct pair * (*reduce
 
   pthread_t server;
   int ret1;
-  struct server_args udp_args;
-  udp_args.m = m;
-  udp_args.r = r;
-  ret1 = pthread_create(&server, NULL, start_server, 0x0);
+  struct server_args* udp_args = (struct server_args*)malloc(sizeof(struct server_args));
+  udp_args->m = m;
+  udp_args->r = r;
+  ret1 = pthread_create(&server, NULL, start_server, (void *) udp_args);
   printf("MAINLIB │ Created server thread.\n");
 
 

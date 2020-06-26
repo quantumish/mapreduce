@@ -26,21 +26,16 @@ void* start_server(void* server_arguments)
   if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
     exit(1);
   }
-  printf("init'd socket successfully\n");
 
   // IP address of client
   struct sockaddr_in remaddr;
   socklen_t addrlen = sizeof(remaddr);
   int recvlen;
   char buf[BUFSIZE];
-  printf("init'd client info successfully\n");
 
   // List to track which files have been mapped. 0 = unmapped, 1 = mapped, -1 = in-progress.
-  printf("0x%x \n", function_args);
   int* mapped = (int*)malloc(function_args->m * sizeof(int));
-  printf("malloc'd m list successfully\n");
   int* reduced = (int*)malloc(function_args->r * sizeof(int));
-  printf("malloc'd e list successfully\n");
   for (int i = 0; i < function_args->r; i++) {
     reduced[i] = 0;
   }
@@ -50,7 +45,6 @@ void* start_server(void* server_arguments)
   {
     mapped[i] = 0;
   }
-  printf("init'd lists successfully\n");
 
   int clean_status = 0;
 
@@ -62,11 +56,8 @@ void* start_server(void* server_arguments)
   // TODO Switch to hashmap instead of my bad version of Python dictionaries
   int keys[500];
   struct client values[500];
-  printf("init'd successfully");
   while (1==1) {
-    printf("ping.\n");
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
-    printf("I have recieved something.\n");
     if (recvlen > 0) {
       buf[recvlen] = 0;
       printf(" SERVER │ Received %d-byte message from %i: \"%s\"\n", recvlen, remaddr.sin_port, buf);
