@@ -31,11 +31,11 @@ void start_server(void* server_arguments)
   struct sockaddr_in remaddr;
   socklen_t addrlen = sizeof(remaddr);
   int recvlen;
-  unsigned char buf[BUFSIZE];
+  char buf[BUFSIZE];
 
   // List to track which files have been mapped. 0 = unmapped, 1 = mapped, -1 = in-progress.
-  int* mapped = malloc(function_args->m * sizeof(int));
-  int* reduced = malloc(function_args->r * sizeof(int));
+  int* mapped = (int*)malloc(function_args->m * sizeof(int));
+  int* reduced = (int*)malloc(function_args->r * sizeof(int));
   for (int i = 0; i < function_args->r; i++) {
     reduced[i] = 0;
   }

@@ -100,7 +100,7 @@ void begin(char* path, struct pair * (*map)(struct pair), struct pair * (*reduce
   for (int i = 0; i < m; i++) {
     pthread_t worker;
     // HACK Trickery with structs as pthread_create only allows one argument to function for some reason.
-    struct args * pass_args = malloc(sizeof(struct args));
+    struct args * pass_args = (struct args*)malloc(sizeof(struct args));
     pass_args->name = i;
     pass_args->map = map;
     pass_args->reduce = reduce;

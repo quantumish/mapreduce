@@ -12,10 +12,10 @@
 // Hastily attempt to reduce number of memory leaks using this function
 static void cleanup(int m, int r)
 {
-  char* line = malloc(MAXLINE*sizeof(char));
+  char* line = (char*)malloc(MAXLINE*sizeof(char));
   // Free every pointer to an output of the map function
   for (int i = 0; i < m; i++) {
-    char* partpath = malloc(50*sizeof(char));
+    char* partpath = (char*)malloc(50*sizeof(char));
     sprintf(partpath, "./program/intermediate%d", i);
     FILE* filepart = fopen(partpath, "r");
     while (fgets(line, MAXLINE, filepart) != NULL) {
@@ -30,7 +30,7 @@ static void cleanup(int m, int r)
   }
   // Free all the pointers to the reduce function's output
   for (int i = 0; i < r; i++) {
-    char* outpath = malloc(50*sizeof(char));;
+    char* outpath = (char*)malloc(50*sizeof(char));;
     sprintf(outpath, "./program/out%d", i);
     FILE* out = fopen(outpath, "r");
     while (fgets(line, MAXLINE, out) != NULL) {
@@ -95,7 +95,7 @@ int sort_file(char* finalpath, char* path)
   rewind(input);
   char* list[length];
   for (int i = 0; i < length; i++) {
-    list[i] = malloc(sizeof(char)*MAXLINE);
+    list[i] = (char*)malloc(sizeof(char)*MAXLINE);
     fgets(list[i], BUFSIZE, input);
   }
   qsort(list, length, sizeof (char*), alphcmp);
@@ -116,7 +116,7 @@ static void get_output_file_portion(FILE* fp, struct pair* pair_list, int m, int
   rewind(fp);
   while (fgets(line, MAXLINE, fp) != NULL) {
     if ((i >= m) && (i < n)) {
-      struct pair *ret = malloc(sizeof(struct pair));
+      struct pair* ret = (struct pair*)malloc(sizeof(struct pair));
       /* ret->key = malloc(sizeof(void*)); */
       void* addr1 = 0x0;
       void* addr2 = 0x0;
@@ -135,12 +135,12 @@ static void get_output_file_portion(FILE* fp, struct pair* pair_list, int m, int
 static void retrieve_correct_portion(long piece, long total, char* sorted_path, struct pair** input, long length) {
   struct pair * pair_list = *input;
   FILE* fptr = fopen(sorted_path, "r");
-  char* prevline = malloc(MAXLINE * sizeof(char));
-  char* line = malloc(MAXLINE * sizeof(char));
+  char* prevline = (char*)malloc(MAXLINE * sizeof(char));
+  char* line = (char*)malloc(MAXLINE * sizeof(char));
   int i = 0;
   int range[2] = {length, 0};
   while (fgets(line, sizeof(line), fptr)) {
-    char* key  = malloc(MAXLINE * sizeof(char));
+    char* key  = (char*)malloc(MAXLINE * sizeof(char));
     sscanf(line, "%s *s", key);
     strcpy(line, key);
     if ((i >= (piece*length)/total)  && (strcmp(line, prevline)!=0)) {
@@ -163,8 +163,8 @@ static void retrieve_correct_portion(long piece, long total, char* sorted_path, 
   }
   //printf("PORTION IS %i to %i\n", range[0],  range[1]);
   get_output_file_portion(fptr, pair_list, range[0], range[1]);
-  pair_list[range[1]-range[0]].key = '\0';
-  pair_list[range[1]-range[0]].value = -1;
+  pair_list[range[1]-range[0]].key = 0x0;
+  pair_list[range[1]-range[0]].value = 0x0;
 }
 
 // This tutorial helped quite a bit in debugging what was going wrong with connection
@@ -195,8 +195,8 @@ void* start_worker(void* arguments)
   char buf[BUFSIZE];
   int recvlen;
   socklen_t len = sizeof(addr);
-  struct pair* results = (struct pair *)malloc(sizeof(struct pair)*function_args->length);
-  struct pair* out = malloc(sizeof(struct pair)*(function_args->length+1));
+  struct pair* results = (struct pair*)malloc(sizeof(struct pair)*function_args->length);
+  struct pair* out = (struct pair*)malloc(sizeof(struct pair)*(function_args->length+1));
   while (1==1) {
     recvlen = recvfrom(s, buf, BUFSIZE, 0, (struct sockaddr *) &addr, &len);
     if (recvlen > 0) {
@@ -256,11 +256,11 @@ void* start_worker(void* arguments)
         int sort_len = sort_file(sort_path, agg_path);
 
         // Run reduce on subsets of keys
-        struct pair* in = malloc(sizeof(struct pair)*(sort_len+1));
+        struct pair* in = (struct pair*)malloc(sizeof(struct pair)*(sort_len+1));
         in[sort_len].key = 0x0;
         in[sort_len].value = 0x0;
         retrieve_correct_portion(split_args[1], split_args[0], sort_path, &in, sort_len);
-        out = malloc(sizeof(struct pair)*(sort_len+1));
+        out = (struct pair*)malloc(sizeof(struct pair)*(sort_len+1));
         out = (*function_args->reduce)(in);
         out[sort_len].key = 0x0;
         out[sort_len].value = 0x0;
