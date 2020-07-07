@@ -36,7 +36,7 @@ struct args
   int name;
   int length;
   int ip;
-  std::function<struct pair*(struct pair)> map;
+  std::function<struct pair*(struct pair*)> map;
   std::function<struct pair*(struct pair*)> reduce;
   std::function<void(char*)> translate;
 };

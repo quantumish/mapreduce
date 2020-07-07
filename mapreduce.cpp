@@ -73,7 +73,7 @@ void split(char* path, int num_splits) {
 // Takes char* path to input file, function pointer for map function, function pointer for reduce function, int M, and int length of keys
 // as well as char* public ip
 // TODO Investigate necessity of length parameter and try to get rid of it.
-void begin(char* path, std::function<struct pair*(struct pair)> map, std::function<struct pair*(struct pair*)> reduce, std::function<void(char*)> translate, int m, int length, char* ip, int r)
+void begin(char* path, std::function<struct pair*(struct pair*)> map, std::function<struct pair*(struct pair*)> reduce, std::function<void(char*)> translate, int m, int length, char* ip, int r)
 {
   signal(SIGSEGV, handler);
   split(path, m);

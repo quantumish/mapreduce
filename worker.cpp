@@ -132,7 +132,8 @@ static void get_output_file_portion(FILE* fp, struct pair* pair_list, int m, int
   }
 }
 
-static void retrieve_correct_portion(long piece, long total, char* sorted_path, struct pair** input, long length) {
+static void retrieve_correct_portion(long piece, long total, char* sorted_path, struct pair** input, long length)
+{
   struct pair * pair_list = *input;
   FILE* fptr = fopen(sorted_path, "r");
   char* prevline = (char*)malloc(MAXLINE * sizeof(char));
@@ -213,26 +214,17 @@ void* start_worker(void* arguments)
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
 
         // TODO Make this size dynamic/configurable. Also change to relative path. Also this maybe shouldn't be done worker-side.
-        // TODO Why is this reading through the file?? Remove.
-        
-        char content[MAXCONTENT];
+        char* content = (char*)malloc(sizeof(char)*MAXCONTENT);
         char line[MAXLINE];
         char* finalpath = (char*)malloc(sizeof(char)*100);
         char path[100] = "./program/file_part";
         finalpath = strcat(path, args);
-        FILE* fp = fopen(finalpath,"r");
-        rewind(fp);
-        fwrite("\n", sizeof(char), 2, fp);
-        while (fgets(line, MAXLINE, fp)) {
-          strcat(content, line);
-        }
-        fclose(fp);
 
-        struct pair file;// = (struct pair*)malloc(sizeof(struct pair));
-        file.key = (void*)0x0;
-        file.value = (void*)0x0;
-        printf("SENDING %p %p\n", file.key, file.value);
-        results = function_args->map(file);
+        struct pair* file = new struct pair;//(struct pair*)malloc(sizeof(struct pair));
+        file->key = finalpath;
+        file->value = content;
+        printf("Passing %p %p in form of %p\n", file->key, file->value, file);
+        results = (function_args->map)(file);
 
         char wpath[100] = "./program/intermediate";
         char t_name[10];

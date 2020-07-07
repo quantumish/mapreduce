@@ -18,6 +18,6 @@ void cleanup(int m, int r);
 
 // Starts MapReduce. Calls split function, starts server and worker processes,
 // then recieves output of server and returns it back to program.
-void begin(char* path, std::function<struct pair*(struct pair)> map, std::function<struct pair*(struct pair*)> reduce, std::function<void(char*)> translate, int m, int length, char* ip, int r);
+void begin(char* path, std::function<struct pair*(struct pair*)> map, std::function<struct pair*(struct pair*)> reduce, std::function<void(char*)> translate, int m, int length, char* ip, int r);
 
 #endif /* main.h */
