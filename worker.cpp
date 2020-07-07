@@ -213,11 +213,13 @@ void* start_worker(void* arguments)
         sendto(s, "Starting.", BUFSIZE, 0, (struct sockaddr*)NULL, sizeof(addr));
 
         // TODO Make this size dynamic/configurable. Also change to relative path. Also this maybe shouldn't be done worker-side.
-
+        // TODO Why is this reading through the file?? Remove.
+        
         char content[MAXCONTENT];
         char line[MAXLINE];
+        char* finalpath = (char*)malloc(sizeof(char)*100);
         char path[100] = "./program/file_part";
-        char* finalpath = strcat(path, args);
+        finalpath = strcat(path, args);
         FILE* fp = fopen(finalpath,"r");
         rewind(fp);
         fwrite("\n", sizeof(char), 2, fp);
@@ -226,8 +228,11 @@ void* start_worker(void* arguments)
         }
         fclose(fp);
 
-        struct pair file = {finalpath, content};
-        results = (function_args->map)(file);
+        struct pair file;// = (struct pair*)malloc(sizeof(struct pair));
+        file.key = (void*)0x0;
+        file.value = (void*)0x0;
+        printf("SENDING %p %p\n", file.key, file.value);
+        results = function_args->map(file);
 
         char wpath[100] = "./program/intermediate";
         char t_name[10];
